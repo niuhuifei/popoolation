@@ -1,6 +1,4 @@
-#summary One-sentence summary of this page.
-
-= Introduction =
+#summary The page provides a quick walkthrough for PoPOOLation. Starting with the reads the diversity in D. melanogaster will be assessed
 
 = Data set =
 
