@@ -422,6 +422,9 @@ exit;
 	if(($alleles->{sp1} =~ m/N/gi) or ($alleles->{sp2} =~ m/N/gi) or ($alleles->{sp3} =~ m/N/gi)) {
 	    ($ancestral_state,$derived_state) = ("na","na");
 	}
+	elsif(($alleles->{sp1} eq "-") or ($alleles->{sp2} eq "-") or ($alleles->{sp3} eq "-")) {
+	    ($ancestral_state,$derived_state) = ("na","na");
+	}
 	else {
 	    if (("$alleles->{sp2}" eq "$alleles->{sp3}") and ("$alleles->{sp1}" ne "$alleles->{sp2}")) {
 		($ancestral_state,$derived_state) = ("$alleles->{sp3}","$alleles->{sp1}");

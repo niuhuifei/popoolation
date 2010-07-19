@@ -6,11 +6,13 @@ use Pod::Usage;
 use FindBin qw($RealBin);
 use lib "$RealBin/Modules";
 use VarianceExactCorrection;
+use FormatSNP;
 use Pileup;
 our $verbose=1;
 
 my $pileupfile="";
 my $output="";
+my $snpfile="";
 my $windowSize= 50000;
 my $stepSize=10000;
 my $minCount=2;
@@ -24,8 +26,7 @@ my $maxCoverage=1000000;
 my $minCoveredFraction=0.6;
 
 
-#--measure theta --input /Volumes/Volume_4/analysis/pop-fst/s1_28degF15rep4biorep.pileup --pool-size 500 --min-coverage 4 --min-count 2
-#--measure pi --input /Users/robertkofler/dev/PopGenTools/test/test1.pileup  --pool-size 500 --min-coverage 4 --min-count 2 --output /Users/robertkofler/dev/PopGenTools/test/res.txt
+# --measure pi --help --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi --snp-output /Users/robertkofler/dev/testfiles/output/test.snps
 # --measure theta --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 2 --max-coverage 400 --min-covered-fraction 0.5 --window-size 100 --step-size 100 --input /Volumes/Volume_4/pablo/Sakton_Merged_MQ20-resorted.pileup --output /Volumes/Volume_4/pablo/sakto-out
 
 my $measure="";
@@ -35,6 +36,7 @@ GetOptions(
     "measure=s"         =>\$measure,
     "input=s"           =>\$pileupfile,
     "output=s"          =>\$output,
+    "snp-output=s"      =>\$snpfile,
     "fastq-type=s"      =>\$fastqtype,
     "window-size=i"     =>\$windowSize,
     "step-size=i"       =>\$stepSize,
@@ -67,6 +69,10 @@ my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
 
 open my $ofh, ">",$output or die "Could not open output file $output\n";
 
+my $snpwriter;
+$snpwriter=get_WindowSNPFormater($snpfile) if $snpfile;
+
+
 while(my $win=$pileslider->nextWindow())
 {
     my $chr=$win->{chr};
@@ -77,6 +83,9 @@ while(my $win=$pileslider->nextWindow())
     my $covercount=$win->{count_covered};
     
     print "Processing window: $chr:$win->{start}-$win->{end}\n";
+    # writer snps
+    $snpwriter->($win) if $snpwriter;
+    
     
     my $coveredFraction=$covercount/$window;
     
@@ -478,9 +487,13 @@ Using the samtools the sam format can be easily converted into the pileup format
 
 The output file.  Mandatory.
 
+=item B<--snp-output>
+
+If provided, this file will contain the polymorphic sites which have been used for this analysis; default=empty
+
 =item B<--measure>
 
-Currently, "pi", "theta" and "d" is supported. Mandatory
+Currently, "pi", "theta" and "D" is supported. This stands for Tajima's Pi, Watterson's Theta, Tajima's D respectively; Mandatory
 
 =item B<--pool-size>
 
@@ -569,13 +582,49 @@ For every sliding window the population genetics measure will be displayed in th
  col 2: position in the reference chromosome
  col 3: number of SNPs in the sliding window; These SNPs have been used to calculate the value in col 5
  col 4: fraction of the window covered by a sufficient number of reads. Suficient means higher than min-coverage and lower than max-coverage
- col 5: population genetics estimator (pi, theta, d)
- 
+ col 5: population genetics estimator (pi, theta, D)
+
+=head2 SNP Output
+
+This output file is optional, it will only be created if the option  C<--snp-output> is provided.
+For example:
+
+ >2R:50; 2R:0-100; snps:3
+ 2R      13      A       17      10      0       0       7       0
+ 2R      30      A       34      33      1       0       0       0
+ 2R      37      A       40      39      1       0       0       0
+
+ >2R:150; 2R:100-200; snps:2
+ 2R      105     A       76      64      0       12      0       0
+ 2R      118     T       75      0       72      1       2       0
+
+ The header contains the following information
+ >chr:middle chr:start-end snps:scnpcount
+ chr..chromosome (contig)
+ middle.. middle position of the window
+ start.. start position of the window
+ end.. end position of the window
+ snpcount.. number of snps found in the given window
+
+ The individual tab-delimited entries are in the following format:
+ col 1: chromosome ID (contig)
+ col 2: position in chromosome
+ col 3: reference character
+ col 4: coverage
+ col 5: counts of A's
+ col 6: counts of T's
+ col 7: counts of C's
+ col 8: counts of G's
+ col 9: counts of N's
+
 
 =head2 Technical detail
 
 The pileup file may contain deletions which can be recognised by the symbol '*'. SNP sites which have a deletion are ignored.
-The sum of the bases A,T,C,G is used as coverage (ignoring N and 
+The sum of the bases A,T,C,G is used as coverage (ignoring N's).
+
+The script will be slow at the beginning but speed up steadily. Calculating the correction factors for Tajima's Pi, Watterson's Theta and Tajima's D is computationally intense.
+However, it needs only to be done a single time. The once calculated correction factors will be stored in hashes where they can be reused when required, this speeds up computation. 
  
  
 =cut

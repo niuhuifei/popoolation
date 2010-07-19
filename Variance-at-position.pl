@@ -5,6 +5,7 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin qw($RealBin);
 use lib "$RealBin/Modules";
+use FormatSNP;
 use VarianceExactCorrection;
 use Pileup;
 
@@ -14,6 +15,7 @@ our $verbose=1;
 my $pileupfile="";
 my $gtffile="";
 my $output="";
+my $snpfile="";
 my $minCount=2;
 my $fastqtype="illumina";
 my $minQual=20;
@@ -37,6 +39,7 @@ GetOptions(
     "pileup=s"          =>\$pileupfile,
     "gtf=s"             =>\$gtffile,
     "output=s"          =>\$output,
+    "snp-output=s"      =>\$snpfile,
     "fastq-type=s"      =>\$fastqtype,
     "min-count=i"       =>\$minCount,
     "min-qual=i"        =>\$minQual,
@@ -72,6 +75,13 @@ open my $ifh, "<",$pileupfile or die "Could not open pileup file";
 
 print "Start parsing the pileup file..\n";
 open my $ofh,">",$output or die "Could not open output file";
+
+# get a SNP writer
+my $snpwriter;
+$snpwriter=get_gtfSNPFormater($snpfile) if $snpfile;
+
+
+
 my $counter=0;
 while(my $line=<$ifh>)
 {
@@ -99,7 +109,7 @@ while(my $line=<$ifh>)
         # in case this is the last position of the gene, handle it immediately; print it         
         if($pos==$genehash->{$gene}{last})
         {
-            Utility::handle_completed_gene($ofh,$genehash,$gene,$varianceCalculator,$measure);
+            Utility::handle_completed_gene($ofh,$genehash,$gene,$varianceCalculator,$measure,$snpwriter);
         }
         
     }
@@ -111,7 +121,7 @@ while(my $line=<$ifh>)
 my @keys=keys(%$genehash);
 for my $key (@keys)
 {
-    Utility::handle_completed_gene($ofh,$genehash,$key,$varianceCalculator,$measure);
+    Utility::handle_completed_gene($ofh,$genehash,$key,$varianceCalculator,$measure,$snpwriter);
 }
 
 close $ofh;
@@ -123,6 +133,7 @@ exit;
     package Utility;
     use strict;
     use warnings;
+
     
     sub handle_completed_gene
     {
@@ -131,6 +142,7 @@ exit;
         my $geneid=shift;
         my $varianceCalculator=shift;
         my $measure=shift;
+        my $snpwriter=shift;
         
         my $temp=$genehash->{$geneid};
         
@@ -141,6 +153,9 @@ exit;
     
         my $snps=$temp->{snps};
         my $covered=$temp->{covered};
+        
+        # write the snps to the output file if the snpwriter is available
+        $snpwriter->($geneid,$snps) if $snpwriter;
         
         my $snpcount=@$snps;
         my $coveredFraction=$covered/$length;
@@ -454,9 +469,13 @@ For more information use <--help>
 
 The output file.  Mandatory.
 
+=item B<--snp-output>
+
+If provided, this file will contain the polymorphic sites which have been used for this analysis; default=empty
+
 =item B<--measure>
 
-Currently, "pi", "theta" and "d" is supported. Mandatory
+Currently, "pi", "theta" and "D" is supported. This stands for Tajima's Pi, Watterson's Theta, Tajima's D respectively; Mandatory
 
 =item B<--pool-size>
 
@@ -532,7 +551,7 @@ A gtf-file as described here http://mblab.wustl.edu/GTF2.html
  AB000381 Twinscan  exon         700   800   .   +   .  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
  AB000381 Twinscan  CDS          700   707   .   +   2  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
 
-The script is grouping evertying with the same C<gene_id>! The feature field is not considered, so any feature may be used. The stand is not considered;
+The script is grouping evertying with the same C<gene_id>! The feature field is not considered, so any feature may be used. The strand is not considered;
 The tag C<transcript_id> will be ignored.
 Attention: Do not mix the features exon with transcript/gene since the transcripts span exons and introns!!
 In case features (eg. genes) are overlapping the respective SNP is considered for every feature at a certain position once; 
@@ -549,6 +568,38 @@ The output will be as in the followin example:
  col 2: SNPs found in the feature; the SNPs of all partial features - eg. exons of a gene - are summed up
  col 3: fraction of the window covered by a sufficient number of reads. Suficient means higher than min-coverage and lower than max-coverage; all partial features are considered
  col 4: population genetics estimator (pi, theta, d); this is the weighted mean of all partial features; weighted by length of the partial feature
+
+
+=head2 SNP Output
+
+This output file is optional, it will only be created if the option  C<--snp-output> is provided. For example:
+
+ >FBgn0248264 snps:4
+ 2       54273   A       62      38      0       0       24      0
+ 2       54274   T       60      22      38      0       0       0
+ 2       54339   T       58      12      46      0       0       0
+ 2       54382   G       72      2       1       0       69      0
+
+ >FBgn0074145 snps:2
+ 2       56183   T       153     0       151     2       0       0
+ 2       56216   G       170     2       0       0       168     0
+
+ The header contains the following information
+ >geneid snps:scnpcount
+ geneid.. the ID of the genes
+ snpcount.. number of snps found in the given window
+
+ The individual tab-delimited entries are in the following format:
+ col 1: chromosome ID (contig)
+ col 2: position in chromosome
+ col 3: reference character
+ col 4: coverage
+ col 5: counts of A's
+ col 6: counts of T's
+ col 7: counts of C's
+ col 8: counts of G's
+ col 9: counts of N's
+
 
 =head2 Technical detail
 
