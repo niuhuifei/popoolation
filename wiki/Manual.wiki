@@ -1,8 +1,11 @@
-#summary One-sentence summary of this page.
+#Manual of PoPOOLation
 
-= Introduction =
+= Requirements =
 
-Add your content here.
+  * Perl 5.8 or higher
+  * a short read aligner (e.g.: bwa)
+  * samtools
+  * a PoPOOLation copy
 
 
 = Details =
