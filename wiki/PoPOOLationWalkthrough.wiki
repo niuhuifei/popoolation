@@ -13,5 +13,6 @@ Add your content here.
 
 == Trimming of the reads ==
 {{{
-perl trim-fastq --input
+perl ~/dev/PopGenTools/basic-pipeline/trim-fastq.pl --input1 s_7_1_sequence_Jul2009.fastq --input2 s_7_2_sequence_Jul2009.fastq --quality-threshold 20 --min-length 50 --output dmel_trimed
 }}}
+=== Resulting trimming statistics ===
