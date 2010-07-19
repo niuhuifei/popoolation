@@ -29,7 +29,7 @@ We used: dmel-all-chromosome-r5.22.fasta.gz
 
 Remove everything after the first whitespace from the reference genome. This is a precautioniary measure as some mappers and software downstream of mapping have difficulties with fasta-ids containing whitespace.
 {{{
-awk '{print $1}' dmel-all-chromosome-r5.22.fasta >dmel-short-header.fa
+awk '{print $1}' dmel-all-chromosome-r5.22.fasta > dmel-short-header.fa
 }}}
 
 Index the reference sequence
