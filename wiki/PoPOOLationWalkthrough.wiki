@@ -16,3 +16,18 @@ Add your content here.
 perl trim-fastq.pl --input1 s_7_1_sequence_Jul2009.fastq --input2 s_7_2_sequence_Jul2009.fastq --quality-threshold 20 --min-length 50 --output dmel_trimed
 }}}
 === Resulting trimming statistics ===
+
+
+== Mapping of the reads ==
+
+=== Prepare reference sequence ===
+First obtain a reference genome of D. melanogaster from http://flybase.org/
+
+We used: dmel-all-chromosome-r5.22.fasta.gz
+
+Remove everything after the first whitespace from the reference genome. This is a precautioniary measure as some mappers or software downstream of mapping have difficulties with fasta-ids containing whitespace.
+{{{
+awk '{print $1}' dmel-all-chromosome-r5.22.fasta >dmel-short-header.fa
+}}}
+
+Index the reference sequence
