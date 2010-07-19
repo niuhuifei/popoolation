@@ -20,7 +20,7 @@ perl trim-fastq.pl --input1 s_7_1_sequence_Jul2009.fastq --input2 s_7_2_sequence
 === Resulting trimming statistics ===
 
 
-== Mapping of the reads ==
+== Mapping of reads ==
 
 === Prepare reference sequence ===
 First obtain a reference genome of D. melanogaster from http://flybase.org/
@@ -34,4 +34,5 @@ awk '{print $1}' dmel-all-chromosome-r5.22.fasta >dmel-short-header.fa
 
 Index the reference sequence
 {{{
+bwa index dmel-short-header.fa
 }}}
