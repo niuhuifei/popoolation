@@ -8,7 +8,7 @@
 Add your content here.
 
 = Requirements =
-see [[Manual]]
+see [Manual]
 
 
 = Walkthrough =
