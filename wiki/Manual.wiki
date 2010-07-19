@@ -9,9 +9,19 @@
 
 
 
-= Details =
+= PoPOOLation scripts =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+== General note ==
+
+Help for all PoPOOLation scripts can be requested using the '--help' option. 
+For example
+{{{
+perl trim-fastq.pl --help
+}}}
+
+Unit tests for all PoPOOLation scripts can be run using the '--test' option
+For example:
+{{{
+perl trim-fastq.pl --test
+}}}
+== trim-fastq.pl ==
