@@ -3,6 +3,7 @@
 = Requirements =
 
   * Perl 5.8 or higher
+  * R 2.7 or higher
   * a short read aligner (e.g.: bwa)
   * samtools
   * a PoPOOLation copy
