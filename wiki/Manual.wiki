@@ -6,7 +6,7 @@
   * R 2.7 or higher
   * a short read aligner (e.g.: bwa)
   * samtools
-  * a PoPOOLation copy
+
 
 
 = Details =
