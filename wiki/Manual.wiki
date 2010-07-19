@@ -25,3 +25,5 @@ For example:
 perl trim-fastq.pl --test
 }}}
 == trim-fastq.pl ==
+
+= IGV =
