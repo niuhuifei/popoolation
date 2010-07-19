@@ -7,7 +7,6 @@
     use Test;
     use VarianceExactCorrection;
     use VarMath;
-    use FstMath;
     require Exporter;
     our @ISA = qw(Exporter);
     our @EXPORT=qw(run_VarianceTests);
