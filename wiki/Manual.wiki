@@ -1,4 +1,4 @@
-#Manual of PoPOOLation
+# Manual of PoPOOLation
 
 = Requirements =
 
