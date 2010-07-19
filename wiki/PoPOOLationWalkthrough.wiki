@@ -19,6 +19,88 @@ perl trim-fastq.pl --input1 s_7_1_sequence_Jul2009.fastq --input2 s_7_2_sequence
 }}}
 === Resulting trimming statistics ===
 
+{{{
+FINISHED: end statistics
+Read-pairs processed: 17957720
+Read-pairs trimmed in pairs: 13495995
+Read-pairs trimmed as singles: 3802238
+
+
+FIRST READ STATISTICS
+First reads passing: 15656946
+5p poly-N sequences trimmed: 16377
+3p poly-N sequences trimmed: 61990
+Reads discarded during 'remaining N filtering': 0
+Reads discarded during length filtering: 2300774
+Count sequences trimed during quality filtering: 8551460
+
+Read length distribution first read
+length	count
+50	110528
+51	112155
+52	115546
+53	119517
+54	120622
+55	123213
+56	127909
+57	132907
+58	139580
+59	143970
+60	151528
+61	166721
+62	178000
+63	185352
+64	192283
+65	202482
+66	221528
+67	247456
+68	270715
+69	312185
+70	364457
+71	461386
+72	830395
+73	1220619
+74	9405892
+
+
+SECOND READ STATISTICS
+Second reads passing: 15137282
+5p poly-N sequences trimmed: 99060
+3p poly-N sequences trimmed: 35878
+Reads discarded during 'remaining N filtering': 0
+Reads discarded during length filtering: 2820438
+Count sequences trimed during quality filtering: 9051269
+
+Read length distribution second read
+length	count
+50	103225
+51	102568
+52	108397
+53	117810
+54	130272
+55	146265
+56	153847
+57	166468
+58	182299
+59	191046
+60	199036
+61	192029
+62	223088
+63	224462
+64	190667
+65	183919
+66	190513
+67	202838
+68	230031
+69	269701
+70	360601
+71	460748
+72	773657
+73	1181002
+74	8852793
+
+}}}
+
 
 == Mapping of reads ==
 
