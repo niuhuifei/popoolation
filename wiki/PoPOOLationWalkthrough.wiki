@@ -104,7 +104,7 @@ length	count
 }}}
 
 
-== Mapping of reads ==
+== Mapping of reads (BWA) ==
 
 === Prepare reference sequence ===
 First obtain a reference genome of D. melanogaster from http://flybase.org/
@@ -119,4 +119,12 @@ awk '{print $1}' dmel-all-chromosome-r5.22.fasta > dmel-short-header.fa
 Index the reference sequence
 {{{
 bwa index dmel-short-header.fa
+}}}
+=== Mapping using bwa ===
+
+Assuming the reference sequence is in the folder 'wg' the following command will map the reads which have been trimmed in a pair to the reference:
+
+{{{
+bwa aln -t 3 -o 2 -d 12 -e 12 -l 100 -n 0.01 wg/dmel-short-header.fa dmel_trimed_1 > dmel_trimed_1.sai
+bwa aln -t 3 -o 2 -d 12 -e 12 -l 100 -n 0.01 wg/dmel-short-header.fa dmel_trimed_2 > dmel_trimed_2.sai
 }}}
