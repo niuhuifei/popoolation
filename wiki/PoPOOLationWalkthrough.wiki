@@ -175,3 +175,17 @@ samtools pileup dmel.sort.bam > dmel.pileup
 }}}
 
 == Run Popoolation ==
+
+
+=== Run Variance-at-position ===
+
+==== Obtain and prepare a annotation ====
+Go to the FlyBase homepage (http://flybase.org/) and get the annotation: dmel-all-r5.22.gff.gz
+
+Unzip the file.
+
+Filter for exons and convert it into a gtf file:
+{{{
+cat dmel-all-r5.22.gff| awk '$2=="FlyBase" && $3=="exon"'| perl -pe 's/ID=([^:;]+)(:\d+)?;.*/gene_id "$1"; transcript_id "$1:1"/'> exons.gtf
+}}}
+Note: only the gene_id will be considered by the script Variance-at-position.pl
