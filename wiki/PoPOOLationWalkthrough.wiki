@@ -140,3 +140,9 @@ bwa sampe wg/dmel-short-header.fa dmel_trimed_1.sai dmel_trimed_2.sai dmel_trime
 
 
 == Filter reads by mapping quality and convert to a pileup file == 
+
+Filter by a mapping quality of 20 and convert the sam file into a sorted bam file.
+Filtering by a mapping qualiy of 20 removes the ambiguously mapped reads.
+{{{
+samtools view -q 20 -b -S dmel.sam|samtools sort - dmel.sort
+}}}
