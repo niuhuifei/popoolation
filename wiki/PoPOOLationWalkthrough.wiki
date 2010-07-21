@@ -135,3 +135,8 @@ Converting mapping results to a sam file
 {{{
 bwa sampe wg/dmel-short-header.fa dmel_trimed_1.sai dmel_trimed_2.sai dmel_trimed_1 dmel_trimed_2 > dmel.sam
 }}}
+
+=== Crosscheck ===
+
+
+== Filter reads by mapping quality and convert to a pileup file == 
