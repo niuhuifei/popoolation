@@ -128,3 +128,8 @@ Assuming the reference sequence is in the folder 'wg' the following command will
 bwa aln -t 3 -o 2 -d 12 -e 12 -l 100 -n 0.01 wg/dmel-short-header.fa dmel_trimed_1 > dmel_trimed_1.sai
 bwa aln -t 3 -o 2 -d 12 -e 12 -l 100 -n 0.01 wg/dmel-short-header.fa dmel_trimed_2 > dmel_trimed_2.sai
 }}}
+
+Converting mapping results to a sam file
+{{{
+bwa sampe wg/dmel-short-header.fa dmel_trimed_1.sai dmel_trimed_2.sai dmel_trimed_1 dmel_trimed_2 > dmel.sam
+}}}
