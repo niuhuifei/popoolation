@@ -168,10 +168,10 @@ The result should be this
 73897 with mate mapped to a different chr (mapQ>=5)
 }}}
 
-
+=== Convert the sorted bam file into a pileup file ===
 Convert the bam file into a pileup file:
 {{{
-
+samtools pileup dmel.sort.bam > dmel.pileup
 }}}
 
 == Run Popoolation ==
