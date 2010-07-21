@@ -176,6 +176,8 @@ samtools pileup dmel.sort.bam > dmel.pileup
 
 == Run Popoolation ==
 
+=== Run Variance-sliding.pl ===
+
 
 === Run Variance-at-position ===
 
