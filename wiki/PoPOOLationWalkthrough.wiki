@@ -1,4 +1,4 @@
-#summary A quick walkthrough for PoPOOLation. Starting with the reads the natural variation in a D. melanogaster may be assessed
+#summary A quick walkthrough for PoPoolation. Starting with the reads the natural variation in a D. melanogaster may be assessed
 
 <wiki:toc max_depth="2" />
 
