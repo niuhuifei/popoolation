@@ -1,6 +1,6 @@
 #summary A quick walkthrough for PoPOOLation. Starting with the reads the natural variation in a D. melanogaster may be assessed
 
-#sidebar TableOfContents
+<wiki:toc max_depth="2" />
 
 
 
