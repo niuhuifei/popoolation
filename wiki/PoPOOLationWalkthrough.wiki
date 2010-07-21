@@ -136,16 +136,38 @@ Converting mapping results to a sam file
 bwa sampe wg/dmel-short-header.fa dmel_trimed_1.sai dmel_trimed_2.sai dmel_trimed_1 dmel_trimed_2 > dmel.sam
 }}}
 
-=== Crosscheck ===
 
 
 == Filter reads by mapping quality and convert to a pileup file == 
+
+=== Convert sam-file into a sorted bam-file ===
 
 Filter by a mapping quality of 20 and convert the sam file into a sorted bam file.
 Filtering by a mapping qualiy of 20 removes the ambiguously mapped reads.
 {{{
 samtools view -q 20 -b -S dmel.sam|samtools sort - dmel.sort
 }}}
+=== Crosscheck ===
+{{{
+samtools flagstat dmel.sort.bam
+}}}
+
+The result should be this
+{{{
+22467169 in total
+0 QC failure
+0 duplicates
+22467156 mapped (100.00%)
+22467169 paired in sequencing
+11234128 read1
+11233041 read2
+22324803 properly paired (99.37%)
+22439809 with itself and mate mapped
+27347 singletons (0.12%)
+73897 with mate mapped to a different chr
+73897 with mate mapped to a different chr (mapQ>=5)
+}}}
+
 
 Convert the bam file into a pileup file:
 {{{
