@@ -146,3 +146,10 @@ Filtering by a mapping qualiy of 20 removes the ambiguously mapped reads.
 {{{
 samtools view -q 20 -b -S dmel.sam|samtools sort - dmel.sort
 }}}
+
+Convert the bam file into a pileup file:
+{{{
+
+}}}
+
+== Run PoPoolation ==
