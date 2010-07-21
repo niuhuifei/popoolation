@@ -152,4 +152,4 @@ Convert the bam file into a pileup file:
 
 }}}
 
-== Run PoPoolation ==
+== Run Popoolation ==
