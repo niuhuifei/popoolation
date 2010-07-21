@@ -188,6 +188,7 @@ Filter for exons and convert it into a gtf file:
 {{{
 cat dmel-all-r5.22.gff| awk '$2=="FlyBase" && $3=="exon"'| perl -pe 's/ID=([^:;]+)(:\d+)?;.*/gene_id "$1"; transcript_id "$1:1"/'> exons.gtf
 }}}
-Note: the script Variance-at-position.pl will group all exons with the same gene_id; the transcript_id is not considered
 
-Note: UCSC (the Tables section) already provides gtf formated annotation -> no reformating necessary!
+*Note:* the script Variance-at-position.pl will group all exons with the same gene_id; the transcript_id is not considered
+
+*Note:* UCSC (the Tables section) already provides gtf formated annotation -> no reformating necessary!
