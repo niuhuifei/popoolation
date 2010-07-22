@@ -24,6 +24,6 @@ For example:
 {{{
 perl trim-fastq.pl --test
 }}}
-== trim-fastq.pl ==
 
-= IGV =
+== trim-fastq.pl ==
+This script implements a modified Mott algorithm as implemented by Phred and described here (
