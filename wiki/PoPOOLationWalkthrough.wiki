@@ -181,11 +181,16 @@ samtools pileup dmel.sort.bam > dmel.pileup
 Run the script Variance-sliding.pl with the dme.pileup file requesting Tajima's Pi. We use a window size and a step size of 10000.
 
 {{{
-perl ~/dev/popoolation/Variance-sliding.pl --input dmel.pileup --output dmel.pi --measure pi --window-size 10000 --step-size 10000 --min-count 2 --min-coverage 4 --max-coverage 400 --min-qual 20 --pool-size 500
+perl Variance-sliding.pl --input dmel.pileup --output dmel.pi --measure pi --window-size 10000 --step-size 10000 --min-count 2 --min-coverage 4 --max-coverage 400 --min-qual 20 --pool-size 500
 }}}
 
 We assume a population size of 500 individuals. Furthermore we require a minimum allele count of 2, a minimum base quality of 20, a minimum coverage of 4 and a maximum coverage of 400.
 
+=== Visualise output of Variance-sliding.pl ===
+
+{{[
+perl Visualise-output.pl --input dmel.pi --output dmel.pi.pdf --ylab pi --chromosomes "X 2L 2R 3L 3R 4"
+}}}
 
 === Run Variance-at-position ===
 
