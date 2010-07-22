@@ -7,6 +7,22 @@
   * a short read aligner (e.g.: bwa)
   * samtools
 
+= Download PoPoolation =
+
+PoPoolation may be obtained directly from the subversion repository. Just go to the directory where you want to install PoPoolation in the command line and enter the command:
+{{{
+svn checkout http://popoolation.googlecode.com/svn/trunk/ popoolation
+}}}
+
+To update your copy of PoPoolation with the latest improvements enter your PoPoolation directory and enter the command:
+{{{
+svn update
+}}}
+
+Alternatively PoPoolation may be downloaded from the project main page: http://code.google.com/p/popoolation/
+
+However we recommend to use subversion as bugfixes will be immediately available in the repository.
+
 
 
 = PoPoolation scripts =
