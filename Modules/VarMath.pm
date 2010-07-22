@@ -46,8 +46,13 @@ sub get_D_calculator
         my $above=$pi-$theta;
         my $below=$pi*$dbuffer->($b,$n,$snp->{eucov});
         
-        return 0 if $above == 0;
-        return "na" if $below==0;
+        return 0 if $above < 0.000000000001;
+        if ($below==0)
+        {
+             warn "SNP: at $snp->{chr} $snp->{pos} has almost zero variance! -> Infinite Tajima's D; Details pi-theta: $above; variance: $below; SNP will be ignored\n";
+             return 0;
+        }
+        return 0 if $below==0;
         $below=sqrt($below);
         return ($above/$below);
     }

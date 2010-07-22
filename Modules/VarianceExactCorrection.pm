@@ -44,6 +44,7 @@
         {
             
             my $meas_snp=$self->{$measure}->($self->{b}, $self->{n}, $snp);
+            return "na" if $meas_snp eq "na";
             $measure_sum+=$meas_snp;
         }
         

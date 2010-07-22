@@ -99,6 +99,8 @@ use Pileup;
             {
                 my($firstheader,$nucleotide,$secondheader,$quality)=$fastqr->nextRead();
                 last unless $firstheader;
+                die "Error in sequence $firstheader; nucleotide sequence and quality sequence do not have equal length $nucleotide - $quality\n" unless length($nucleotide) ==length($quality);
+
                 
                 $countProcessed++;
                 print "Processed $countProcessed reads\n" if($verbose && ($countProcessed % $processStep)==0); 
@@ -198,6 +200,10 @@ use Pileup;
             {
                 my($fheader1,$nuc1,$sheader1,$qual1)=$fqr1->nextRead();
                 my($fheader2,$nuc2,$sheader2,$qual2)=$fqr2->nextRead();
+                
+                die "Error in sequence $fheader1; nucleotide sequence and quality sequence do not have equal length $nuc1 - $qual1\n" unless length($nuc1) ==length($qual1);
+                die "Error in sequence $fheader2; nucleotide sequence and quality sequence do not have equal length $nuc2 - $qual2\n" unless length($nuc2) ==length($qual2);
+                
                 my($keep1,$keep2)=(1,1);
                 
                 if(($fheader1 and not $fheader2) or ($fheader2 and not $fheader1))
