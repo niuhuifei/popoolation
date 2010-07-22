@@ -218,8 +218,7 @@ Than:
 
 and check out the results
 
-http://popoolation.googlecode.com/files/igv_ex1.png
-http://popoolation.googlecode.com/files/igv_ex3.png
+
 
 
 
