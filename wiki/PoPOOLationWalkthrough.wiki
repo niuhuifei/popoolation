@@ -188,7 +188,7 @@ We assume a population size of 500 individuals. Furthermore we require a minimum
 
 === Visualise output of Variance-sliding.pl ===
 
-{{[
+{{{
 perl Visualise-output.pl --input dmel.pi --output dmel.pi.pdf --ylab pi --chromosomes "X 2L 2R 3L 3R 4"
 }}}
 
