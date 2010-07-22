@@ -245,6 +245,6 @@ cat dmel-all-r5.22.gff| awk '$2=="FlyBase" && $3=="exon"'| perl -pe 's/ID=([^:;]
 
 Run Variance-at-position.pl
 {{{
-perl ~/dev/popoolation/Variance-at-position.pl --pool-size 500 --min-qual 20 --min-coverage 4 --min-count 2 --max-coverage 4 --pileup dmel.pileup --gtf ann/exons.gtf --output dmel.genes.pi --measure pi
+perl Variance-at-position.pl --pool-size 500 --min-qual 20 --min-coverage 4 --min-count 2 --max-coverage 4 --pileup dmel.pileup --gtf exons.gtf --output dmel.genes.pi --measure pi
 }}}
 We set the pool size to 500, request pi as Population Genetic estimator, use the previously generated pileup file and the reformated exon annotation. 
