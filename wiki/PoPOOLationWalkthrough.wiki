@@ -214,6 +214,14 @@ Than:
   # open the IGV.
   # switch to the genome D. melanogaster reference 5.22
   # load the sorted bam file:  dmel.sort.bam
+  # load the wiggle file: dmel.pi.wig
+
+and check out the results
+
+http://popoolation.googlecode.com/files/igv_ex1.png
+http://popoolation.googlecode.com/files/igv_ex2.png
+
+
 
 === Run Variance-at-position ===
 
