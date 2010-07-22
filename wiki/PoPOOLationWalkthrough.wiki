@@ -264,3 +264,24 @@ Run Variance-at-position.pl
 perl Variance-at-position.pl --pool-size 500 --min-qual 20 --min-coverage 4 --min-count 2 --max-coverage 4 --pileup dmel.pileup --gtf exons.gtf --output dmel.genes.pi --measure pi
 }}}
 We set the pool size to 500, request pi as Population Genetic estimator, use the previously generated pileup file and the reformated exon annotation. 
+
+
+Output will be something like the following:
+{{{
+FBgn0042083	7	0.961	0.002524220
+FBgn0027066	9	0.970	0.001810036
+FBgn0033100	3	0.989	0.001972413
+FBgn0033101	2	0.664	0.001424038
+CG9438	8	0.900	0.003091130
+FBgn0085421	14	0.936	0.003365280
+}}}
+  * column 1: the gene id (or id of the region)
+  * column 2: the number of SNPs found in the gene
+  * column 3: covered fraction; how much of the gene is sufficiently covered by the pileup file; values 0-1; 0..not a single base of the gene has the required coverage, 1.. all bases of the gene have the required coverage
+  * column 4: the measure; here Tajima's pi
+
+*NOTE:* This script is loading the whole annotation into the memory and internally converts it into a per-base hash. For very large gtf files this can be quite memory demanding. In case you do not have enough memory you may split your gtf file and analyse them separately. As long as you are not splitting genes, this will not affect the  outcome.
+For example the following command will retrieve only entries from chromosome 2R;
+{{{
+cat exons.gtf| awk '$1=="2R"' > 2R-exons.gtf
+}}}
