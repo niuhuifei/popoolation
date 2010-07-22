@@ -219,7 +219,9 @@ Than:
   # load the wiggle file: dmel.pi.wig
 
 and check out the results
+
 http://popoolation.googlecode.com/files/igv_ex1.pdf
+
 http://popoolation.googlecode.com/files/igv_ex2.pdf
 
 
