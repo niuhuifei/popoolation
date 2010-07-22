@@ -241,4 +241,4 @@ cat dmel-all-r5.22.gff| awk '$2=="FlyBase" && $3=="exon"'| perl -pe 's/ID=([^:;]
 
 *Note:* the script Variance-at-position.pl will group all exons with the same gene_id; the transcript_id is not considered
 
-*Note:* UCSC (the Tables section) already provides gtf formated annotation -> no reformating necessary!
+*Note:* UCSC (the Tables section) already provides gtf formated annotation -> if you use those and the proper reference sequence no reformating would be necessary!
