@@ -1,4 +1,4 @@
-#summary Manual of PoPOOLation
+#summary Manual of PoPoolation
 
 = Requirements =
 
@@ -9,7 +9,7 @@
 
 
 
-= PoPOOLation scripts =
+= PoPoolation scripts =
 
 == General note ==
 
@@ -19,7 +19,7 @@ For example
 perl trim-fastq.pl --help
 }}}
 
-Unit tests for all PoPOOLation scripts can be run using the '--test' option
+The main scripts of PoPoolation contain Unit tests which can be run using the '--test' option
 For example:
 {{{
 perl trim-fastq.pl --test
