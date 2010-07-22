@@ -23,6 +23,11 @@ PoPoolation may be obtained directly from the svn repository. Just enter the dir
 {{{
 svn checkout http://popoolation.googlecode.com/svn/trunk/ popoolation
 }}}
+
+To update your copy of PoPoolation with the latest improvements enter your PoPoolation directory and enter the command:
+{{{
+svn update
+}}}
 == Trimming of the reads ==
 {{{
 perl trim-fastq.pl --input1 s_7_1_sequence_Jul2009.fastq --input2 s_7_2_sequence_Jul2009.fastq --quality-threshold 20 --min-length 50 --output dmel_trimed
