@@ -19,7 +19,7 @@ see [Manual]
 
 == Download PoPoolation ==
 
-PoPoolation may be obtained directly from the svn repository. Just enter the directory where you want to install PoPoolation in the command line and enter:
+PoPoolation may be obtained directly from the subversion repository. Just go to the directory where you want to install PoPoolation in the command line and enter the command:
 {{{
 svn checkout http://popoolation.googlecode.com/svn/trunk/ popoolation
 }}}
@@ -28,6 +28,11 @@ To update your copy of PoPoolation with the latest improvements enter your PoPoo
 {{{
 svn update
 }}}
+
+Alternatively PoPoolation may be downloaded from the project main page: http://code.google.com/p/popoolation/
+
+However we recommend to use subversion as bugfixes will be immediately available in the repository.
+
 == Trimming of the reads ==
 {{{
 perl trim-fastq.pl --input1 s_7_1_sequence_Jul2009.fastq --input2 s_7_2_sequence_Jul2009.fastq --quality-threshold 20 --min-length 50 --output dmel_trimed
