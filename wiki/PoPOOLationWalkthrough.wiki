@@ -188,11 +188,32 @@ We assume a population size of 500 individuals. Furthermore we require a minimum
 
 === Visualise output of Variance-sliding.pl ===
 
+==== Create an overview ====
+
+Create the overview:
 {{{
 perl Visualise-output.pl --input dmel.pi --output dmel.pi.pdf --ylab pi --chromosomes "X 2L 2R 3L 3R 4"
 }}}
 
+and check out the result:
+
 http://popoolation.googlecode.com/files/dmel.pi.pdf
+
+==== Use IGV ====
+First convert the Drosophila melanogaster pi-file into a wiggle file
+{{{
+perl ~/dev/PopGenTools/VarSliding2Wiggle.pl --input dmel.pi --trackname "dmel Pi" --output dmel.pi.wig
+}}}
+
+than index the bam file:
+{{{
+samtools index dmel.sort.bam
+}}}
+
+Than:
+  # open the IGV.
+  # switch to the genome D. melanogaster reference 5.22
+  # load the sorted bam file:  dmel.sort.bam
 
 === Run Variance-at-position ===
 
