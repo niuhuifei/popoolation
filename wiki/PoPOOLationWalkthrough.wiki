@@ -200,6 +200,8 @@ and check out the result:
 http://popoolation.googlecode.com/files/dmel.pi.pdf
 
 ==== Use IGV ====
+The IGV may be downloaded from: http://www.broadinstitute.org/igv/
+
 First convert the Drosophila melanogaster pi-file into a wiggle file
 {{{
 perl ~/dev/PopGenTools/VarSliding2Wiggle.pl --input dmel.pi --trackname "dmel Pi" --output dmel.pi.wig
@@ -217,7 +219,8 @@ Than:
   # load the wiggle file: dmel.pi.wig
 
 and check out the results
-
+http://popoolation.googlecode.com/files/igv_ex1.pdf
+http://popoolation.googlecode.com/files/igv_ex2.pdf
 
 
 
