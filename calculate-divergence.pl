@@ -326,21 +326,7 @@ exit;
 		sp3=>$a[2]
 	    };
         }
-=cut
-        elsif (($a[0] eq "0") and ($a[1] eq "0") and ($a[2] eq "0")) {
 
-	    $en={
-		chr=>$chr,
-		pos=>$pos,
-		astate=>$astate,
-		dstate=>$dstate,
-		iscov=>0,
-		sp1=>$a[0],
-		sp2=>$a[1],
-		sp3=>$a[2]
-	    };
-        }
-=cut
 	else {
 	    
 	    $en={
@@ -370,12 +356,7 @@ exit;
 
 
 
-    #"input=s"	    =>\$input,
-    #"output=s"	    =>\$output,
-    #"window-size=i"  =>\$windowsize,
-    #"step-size=i"   =>\$step,
-    #"test"          =>\$test,
-    #"help"	    =>\$help
+
     
 =head1 NAME
 
@@ -422,8 +403,8 @@ Display help for this script
 
 A mauve-parser.pl program output file; example:
 
- 2L	5783	na	na	G	G	G
- 2L	5784	na	na	C	C	C
+ 2L	5783	G	C	C	G	G
+ 2L	5784	C	na	C	C	C
  2L	5785	na	na	C	T	G
 
  col 1: reference chromosome
@@ -432,7 +413,7 @@ A mauve-parser.pl program output file; example:
  col 4: derived allelic state
  col 5: allelic state in species 1 (reference species)
  col 6: allelic state in species 2
- col 7: allelic state in species 3 (out group species)
+ col 7: allelic state in species 3 (outgroup species)
  
 =head2 Output
 
