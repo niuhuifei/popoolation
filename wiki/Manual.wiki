@@ -16,7 +16,7 @@
 svn checkout http://popoolation.googlecode.com/svn/trunk/ popoolation
 }}}
 
-To update your copy of !PoPoolation with the latest improvements enter your PoPoolation directory and enter the command:
+To update your copy of !PoPoolation with the latest improvements enter your !PoPoolation directory and enter the command:
 {{{
 svn update
 }}}
@@ -31,13 +31,13 @@ However we recommend to use subversion as bugfixes will be immediately available
 
 == General note ==
 
-Help for all PoPOOLation scripts can be requested using the '--help' option. 
+Help for all !PoPoolation scripts can be requested using the '--help' option. 
 For example
 {{{
 perl trim-fastq.pl --help
 }}}
 
-The main scripts of PoPoolation contain Unit tests which can be run using the '--test' option
+The main scripts of !PoPoolation contain Unit tests which can be run using the '--test' option
 For example:
 {{{
 perl trim-fastq.pl --test
@@ -71,7 +71,7 @@ This script trims reads in the fastq file format and outputs again a fastq file.
 
 == basic-pipeline/mask-sam-indelregions.pl ==
 
-Indels frequently cause misalignments and thus may lead to false positive SNPs. This script masks the region surrounding an indel in the sam file. The sam file may be converted into a pileup file (samtools) and used with PoPoolation
+Indels frequently cause misalignments and thus may lead to false positive SNPs. This script masks the region surrounding an indel in the sam file. The sam file may be converted into a pileup file (samtools) and used with !PoPoolation
 
 == basic-pipeline/identify-genomic-indel-regions.pl ==
 
@@ -79,4 +79,4 @@ Identifies indel regions from a pileup file and outputs the coordinates into a g
 
 
 == basic-pipeline/filter-pileup-by-gtf.pl ==
-Allows to filter a pileup file by the regions specified in a gtf file. The specified regions may either be kept or discarded. For example the output of RepeatMasker may be used directly with this script to remove repetitive regions. As another examples whole regions surrounding indels may be removed (see basic-pipeline/identify-genomic-indel-regions.pl). The pileup file may subsequently be use with PoPoolation
+Allows to filter a pileup file by the regions specified in a gtf file. The specified regions may either be kept or discarded. For example the output of RepeatMasker may be used directly with this script to remove repetitive regions. As another examples whole regions surrounding indels may be removed (see basic-pipeline/identify-genomic-indel-regions.pl). The pileup file may subsequently be use with !PoPoolation
