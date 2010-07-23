@@ -1,5 +1,7 @@
 #summary Manual of PoPoolation
 
+<wiki:toc max_depth="2" />
+
 = Requirements =
 
   * Perl 5.8 or higher
@@ -78,5 +80,3 @@ Identifies indel regions from a pileup file and outputs the coordinates into a g
 
 == basic-pipeline/filter-pileup-by-gtf.pl ==
 Allows to filter a pileup file by the regions specified in a gtf file. The specified regions may either be kept or discarded. For example the output of RepeatMasker may be used directly with this script to remove repetitive regions. As another examples whole regions surrounding indels may be removed (see basic-pipeline/identify-genomic-indel-regions.pl). The pileup file may subsequently be use with PoPoolation
-
-
