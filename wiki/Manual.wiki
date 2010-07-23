@@ -41,8 +41,15 @@ For example:
 perl trim-fastq.pl --test
 }}}
 
-== trim-fastq.pl ==
+== Variance-sliding.pl ==
+Calculates Tajima's Pi or Wattersons Theta or Tajima's D along chromosomes using a sliding window approach.
+The variable sites (SNPs) used for calculating the requested Population Genetic measure may be output to a separate file. The user can choose a step size, a window size, the minimum base quality, the minium allele count, a minimum coverage and a maximum coverage.
+
+
+== basic-pipeline/trim-fastq.pl ==
 This script trims reads in the fastq file format and outputs again a fastq file. Reads may either be trimmed as singel end reads or paired end reads. In case of paired end reads three output files are produced one for the first read, one for the second read and one for all reads which lost their mate because of not fulfilling the requirements (i.e.: they have become single end reads). First a trimming of the character 'N' is performed and secondly a quality trimming using  a modified Mott algorithm as implemented by Phred and described here (http://www.phrap.org/phredphrap/phred.html) is performed. Reads which do not have the required minimum length are discarded. If only one read of a pair has the required minimum length the paired end will be broken and the read will be reported as single end (SE).
+
+
 
 == mauve-parser.pl ==
 
