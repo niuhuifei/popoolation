@@ -45,12 +45,38 @@ perl trim-fastq.pl --test
 Calculates Tajima's Pi or Wattersons Theta or Tajima's D along chromosomes using a sliding window approach.
 The variable sites (SNPs) used for calculating the requested Population Genetic measure may be output to a separate file. The user can choose a step size, a window size, the minimum base quality, the minium allele count, a minimum coverage and a maximum coverage.
 
+== Variance-at-position.pl ==
+Calculates Tajima's Pi or Wattersons Theta or Tajima's D for target regions. The target regions have to be provided as gtf file. Genes frequently consist of several exons, the script groups all regions which have the same "gene_id". The script is also able to handle overlapping regions. If the overlapping regions belong to the same gene (e.g.: sometimes an exon is reported for every transcripts belonging to the same gene), the overlapping region is only considered once. If the overlapping regions belong to different genes they are treated ndependently.
+If requested the SNPs used for calculating the Population Genetic measure may be output to distinct file. 
+Again the user may choose a minimum base quality, a minimum allele count, a minimum coverage and a maximum coverage.
+
+== Visualise-output.pl == 
+Converts the output of Variance-sliding.pl into a pdf. Thus a overview of the general pattern of polymorphism for the provided chromosomes (contigs) may be quickly created.
+
+== VarSliding2Wiggle.pl ==
+Converts the output of Variance-sliding.pl into a wiggle file (http://genome.ucsc.edu/goldenPath/help/wiggle.html). Wiggle files are for example accepted by the Integrative Genomics Viewer (http://www.broadinstitute.org/igv/) or by the UCSC Genome Browser (http://genome.ucsc.edu/).
+
+== mauve-parser.pl ==
+Parses the output of the Mauve Genome Alignment Software (http://asap.ahabs.wisc.edu/mauve/).
+To determine the ancestral allele it is necessary to align three species where one acts as an outgroup, this may be accomplised with Mauve. This script converts the Mauve multiple alignments of several distinct chromosomes into a single tab delimited table. 
+
+== calculate-divergence.pl ==
+
+Calculates the divergence of the species along chromosomes using a sliding window approach. This scripts requires the parsed Mauve output (or any other Multiple alignment software as long as the above mentioned tab delimited table is produced; For more information use: perl calculate-divergence.pl --help).
 
 == basic-pipeline/trim-fastq.pl ==
 This script trims reads in the fastq file format and outputs again a fastq file. Reads may either be trimmed as singel end reads or paired end reads. In case of paired end reads three output files are produced one for the first read, one for the second read and one for all reads which lost their mate because of not fulfilling the requirements (i.e.: they have become single end reads). First a trimming of the character 'N' is performed and secondly a quality trimming using  a modified Mott algorithm as implemented by Phred and described here (http://www.phrap.org/phredphrap/phred.html) is performed. Reads which do not have the required minimum length are discarded. If only one read of a pair has the required minimum length the paired end will be broken and the read will be reported as single end (SE).
 
+== basic-pipeline/mask-sam-indelregions.pl ==
+
+Indels frequently cause misalignments and thus may lead to false positive SNPs. This script masks the region surrounding an indel in the sam file. The sam file may be converted into a pileup file (samtools) and used with PoPoolation
+
+== basic-pipeline/identify-genomic-indel-regions.pl ==
+
+Identifies indel regions from a pileup file and outputs the coordinates into a gtf file. This gtf file may for example be used to filter regions surrounding the indel from a pileup file (see basic-pipeline/filter-pileup-by-gtf.pl).
 
 
-== mauve-parser.pl ==
+== basic-pipeline/filter-pileup-by-gtf.pl ==
+Allows to filter a pileup file by the regions specified in a gtf file. The specified regions may either be kept or discarded. For example the output of RepeatMasker may be used directly with this script to remove repetitive regions. As another examples whole regions surrounding indels may be removed (see basic-pipeline/identify-genomic-indel-regions.pl). The pileup file may subsequently be use with PoPoolation
 
-== calculate-divergence.pl ==
+
