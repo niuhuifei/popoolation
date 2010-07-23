@@ -9,7 +9,7 @@
 || file || read number||read count|| read length||
 || s_7_1_sequence_Jul2009.fastq||1||17957720||75||
 || s_7_2_sequence_Jul2009.fastq||2||17957720||75||
-
+*NOTE* The data set will be available upon publication of the !PoPoolation manuscript. Until then they may be requested from the author: rokofler@gmail.com
 
 = Requirements =
 see [Manual]
