@@ -42,4 +42,8 @@ perl trim-fastq.pl --test
 }}}
 
 == trim-fastq.pl ==
-This script implements a modified Mott algorithm as implemented by Phred and described here (
+This script implements a modified Mott algorithm as implemented by Phred and described here ( 
+
+== mauve-parser.pl ==
+
+== calculate-divergence.pl ==
