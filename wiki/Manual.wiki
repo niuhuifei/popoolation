@@ -55,7 +55,7 @@ Again the user may choose a minimum base quality, a minimum allele count, a mini
 == Visualise-output.pl == 
 Converts the output of Variance-sliding.pl into a pdf. Thus a overview of the general pattern of polymorphism for the provided chromosomes (contigs) may be quickly created.
 
-== VarSliding2Wiggle.pl ==
+== [VarSliding2Wiggle.pl] ==
 Converts the output of Variance-sliding.pl into a wiggle file (http://genome.ucsc.edu/goldenPath/help/wiggle.html). Wiggle files are for example accepted by the Integrative Genomics Viewer (http://www.broadinstitute.org/igv/) or by the UCSC Genome Browser (http://genome.ucsc.edu/).
 
 == mauve-parser.pl ==
