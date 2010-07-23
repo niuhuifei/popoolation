@@ -31,7 +31,7 @@ svn update
 
 Alternatively !PoPoolation may be downloaded from the project main page: http://code.google.com/p/popoolation/
 
-However we recommend to use subversion as bugfixes will be immediately available in the repository.
+*However we recommend to use subversion as bugfixes will be immediately available in the repository*
 
 == Trimming of the reads ==
 {{{
