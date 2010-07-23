@@ -22,58 +22,6 @@ my $verbose=1;
 
 
 
-# comments: input file specifications are wrong. input is a folder not a file
-# also the naming convention for the files in the folder need description
-# also the input needs description what needs to be aligned and how many. with an example
-# the special status of the first sequence needs to be explained
-
-# I would greatly prefer if the chromosome-length would not be encoded in the file-name. Do you really need the full chromosome length, or can you not simple take the maximum length encountered in the file
-# Please be aware that it is extremly user-unfriendly if you need to specify the chromsome-length in the file-name
-
-# function remove_linebreak: why are you writing this in a temporary file, you can just iterate over the $array;
-# temp files should be avoided unless absolutely necessary. When someone starts your script twice they will overwrite each others temp files!!
-
-# $arrary is not a good name for a variable, the name should state what the thing is doing
-
-# also returning a parsed thing in an array is not a good idea, use an anonymous hash
-# for example, information of the strand, what is more readable:
-# $h[2]
-# or $h->{strand}
-
-# problems with ancestral state
-# 
-# A  (dmel)
-# T  (dsim)
-# T  (dyak)
-# ancestral: T; derived A -> correct
-
-
-# A
-# A
-# A
-# ancestral: A; derived 0 (or - ) -> incorrect
-
-# A
-# A
-# T ancestral na: derived na (or na) -> incorrect
-
-# A
-# T
-# A ancestral A: derived 0  or -  -> correct
-
-# A
-# T
-# C ancestral na; derived na;
-
-# check allelic state; why are you calculating ATCGN count when you are only using the N count; Is the gap count not important
-
-# its not necessary to report
-# 0
-# 0
-# 0
-# for unaligned regions. Not reporting them at all is sufficient!!
-
-
 GetOptions(
     "alignment-dir=s"=>\$alignment_dir,
     "output=s"=>\$outputfile,
@@ -378,23 +326,26 @@ exit;
 	my $startpos = $$aligned_block_sequence[0]->{startpos};
 
 	for(my $i=0; $i<scalar(@seq1);$i++) {
-	    if ($seq1[$i] ne "-") {
+	    
+	    if (($seq1[$i] eq "-") or ($seq2[$i] eq "-") or ($seq3[$i] eq "-")) {
+		$aligned_gap++;
+	    }
+	    else {
+		$aligned++;
+	    }
+		
+	    if (($seq1[$i] ne "-") and ($seq2[$i] ne "-") and ($seq3[$i] ne "-")) {
 		push @$alleles,
 		my $alleles = {
 		    sp1=>$seq1[$i],
 		    sp2=>$seq2[$i],
 		    sp3=>$seq3[$i]
 		};
-		#my @alleles = ($seq1[$i],$seq2[$i],$seq3[$i]);
+		
 		my ($ancestral_state,$derived_state) = MauveParser::check_allelic_state($alleles);
 		print $ofh "$chr\t$startpos\t$ancestral_state\t$derived_state\t$seq1[$i]\t$seq2[$i]\t$seq3[$i]\n";
 		
-		if (($seq1[$i] eq "-") or ($seq2[$i] eq "-") or ($seq3[$i] eq "-")) {
-		    $aligned_gap++;
-		}
-		else {
-		    $aligned++;
-		}
+		
 		$alleles = {};
 		
 		#print $ofh "$chr\t$startpos\t$ancestral_state\t$derived_state\t$seq1[$i]\t$seq2[$i]\t$seq3[$i]\n";

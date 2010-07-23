@@ -259,9 +259,9 @@ exit;
         $Dxy13 = $ct13/$array_size;
         $Dxy23 = $ct23/$array_size;
         
-        $Dxy12 = sprintf "%.2f",$Dxy12;
-        $Dxy13 = sprintf "%.2f",$Dxy13;
-        $Dxy23 = sprintf "%.2f",$Dxy23;
+        $Dxy12 = sprintf "%.10f",$Dxy12;
+        $Dxy13 = sprintf "%.10f",$Dxy13;
+        $Dxy23 = sprintf "%.10f",$Dxy23;
 
         #print $ofh "$chr\t$middle\t$Dxy12\t$Dxy13\t$Dxy23\n";
         
