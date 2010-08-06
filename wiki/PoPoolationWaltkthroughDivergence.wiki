@@ -65,3 +65,5 @@ This will create an output like this:
   * column 3: the reference character of _D. melanogaster_
   * column 4: the reference character of _D. simulans_
   * column 5: the reference character of _D. yakuba_
+
+== Calculate the divergence using a sliding window approach ==
