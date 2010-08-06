@@ -8,6 +8,7 @@
   * R 2.7 or higher
   * a short read aligner (e.g.: bwa)
   * samtools
+  * Mauve (http://asap.ahabs.wisc.edu/mauve/)
 
 = Download !PoPoolation =
 
