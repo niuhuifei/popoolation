@@ -7,10 +7,35 @@ see [Manual]
 = Data =
 
 Download the full genomes of _D. melanogaster_, _D. simulans_ and _D. yakuba_ from FlyBase (http://flybase.org/).
+used files:
+  * dmel-all-chromosome-r5.29.fasta.gz
+  * dsim-all-chromosome-r1.3.fasta.gz
+  * dyak-all-chromosome-r1.3.fasta.gz
 
-= Details =
+Unzip the files
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+= Walkthrough =
+
+== Prepare reference genomes ==
+
+Many downstream software tools have problems with headers containing any whitespace. As a cautionary measure it is recommended to keep only the not-whitespace characters of the fasta headers.
+
+{{{
+awk '{print $1}' dmel-all-chromosome-r5.29.fasta > dmel-short.fasta
+awk '{print $1}' dsim-all-chromosome-r1.3.fasta > dsim-short.fasta
+awk '{print $1}' dyak-all-chromosome-r1.3.fasta > dyak-short.fasta
+}}}
+
+== Create multiple genome alignments using mauve ==
+
+Start Mauve and assign as much memory as possible, in this example 2000Mb will be assigned
+{{{
+java -Xmx2000m -jar Mauve.jar
+}}}
+
+  * Click File and Align with progressiveMauve
+  * Click Add sequence and select dmel-short.fasta
+  * Click Add sequence and select dsim-short.fasta
+  * Click Add sequence and select dyak-short.fasta 
+* Note:* the order of the sequences is important. The first should be the reference sequence, i.e the genome for which the divergence will be calculated and the last should be the outgroup (D. yakuba)
+  * Click output file and enter: dmel-dsim-dyak
