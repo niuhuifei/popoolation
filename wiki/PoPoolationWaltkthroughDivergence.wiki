@@ -1,0 +1,16 @@
+#summary Walkthrough for calculating the divergence between species
+
+= Requirements =
+
+see [Manual]
+
+= Data =
+
+Download the full genomes of _D. melanogaster_, _D. simulans_ and _D. yakuba_ from FlyBase (http://flybase.org/).
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
