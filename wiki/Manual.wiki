@@ -60,7 +60,7 @@ Converts the output of Variance-sliding.pl into a wiggle file (http://genome.ucs
 
 == mauve-parser.pl ==
 Parses the output of the Mauve Genome Alignment Software (http://asap.ahabs.wisc.edu/mauve/).
-To determine the ancestral allele it is necessary to align three species where one acts as an outgroup, this may be accomplised with Mauve. This script converts the Mauve multiple alignments of several distinct chromosomes into a single tab delimited table. 
+To determine the ancestral allele it is necessary to align three species where one acts as an outgroup, this may be accomplised with Mauve. This script converts a Mauve multiple genome alignment into a single tab delimited table where one genome (the first) acts as the reference. 
 
 == calculate-divergence.pl ==
 
