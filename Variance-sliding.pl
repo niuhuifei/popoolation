@@ -24,10 +24,12 @@ my $test=0;
 my $minCoverage=4;
 my $maxCoverage=1000000;
 my $minCoveredFraction=0.6;
+my $region="";
 
 
 # --measure pi --help --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi --snp-output /Users/robertkofler/dev/testfiles/output/test.snps
 # --measure theta --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 2 --max-coverage 400 --min-covered-fraction 0.5 --window-size 100 --step-size 100 --input /Volumes/Volume_4/pablo/Sakton_Merged_MQ20-resorted.pileup --output /Volumes/Volume_4/pablo/sakto-out
+#--measure pi --region 2R:150-500 --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi 
 
 my $measure="";
 
@@ -46,6 +48,7 @@ GetOptions(
     "min-coverage=i"    =>\$minCoverage,
     "max-coverage=i"    =>\$maxCoverage,
     "min-covered-fraction=f"=>\$minCoveredFraction,
+    "region=s"          =>\$region,
     "test"              =>\$test,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -64,6 +67,12 @@ pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
 # qualencoding,mincount,mincov,maxcov,minqual
 my $pp=get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
 my $pileslider=PileupSlider->new($pileupfile,$windowSize,$stepSize,$pp);
+
+# if the user provided a region a modified version of the pileupslider is used: the pileupregionslider: Decorator Pattern
+if($region)
+{
+    $pileslider=PileupRegionSlider->new($pileslider,$region);
+}
 
 my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
 
@@ -109,6 +118,76 @@ while(my $win=$pileslider->nextWindow())
 
 close $ofh;
 exit;
+
+{
+    use warnings;
+    use strict;
+    package PileupRegionSlider;
+    
+    sub new
+    {
+        my $class=shift;
+        my $pileupslider=shift;
+        my $region=shift;
+        
+        
+        die "Region $region wrong format; has to be chr:start-end" unless $region=~m/^(\w+):(\d+)-(\d+)$/;
+        my($chr,$start,$end) = ($1,$2,$3);
+        
+        my $item=
+        {
+            ps=>$pileupslider,
+            chr=>$chr,
+            start=>$start,
+            end=>$end
+        };
+        
+        my $self= bless $item, __PACKAGE__;
+        $self->_spoolForward();
+        
+        return $self;
+        
+        
+    }
+    
+    sub _spoolForward
+    {
+        my $self=shift;
+        my $fh=$self->{ps}{fh};
+        my $chr=$self->{chr};
+        my $start=$self->{start};
+        
+        
+        while(my $l=<$fh>)
+        {
+            my ($achr,$apos)=split /\t/,$l;
+            
+            if($achr eq $chr and $apos>=$start)
+            {
+                $self->{ps}->_bufferline($l);
+                last;
+            }
+        }
+        
+        $self->{ps}{lower}=$start;
+        $self->{ps}{upper}=$start+$self->{ps}{window};
+    }
+    
+
+    
+    sub nextWindow
+    {
+        my $self=shift;
+        my $win=$self->{ps}->nextWindow();
+        
+        return undef unless $win;
+        return undef unless $win->{chr} eq $self->{chr};
+        return undef if $win->{start} >$self->{end};
+        return $win;
+    }
+    
+    
+}
 
 
 
@@ -494,6 +573,10 @@ If provided, this file will contain the polymorphic sites which have been used f
 =item B<--measure>
 
 Currently, "pi", "theta" and "D" is supported. This stands for Tajima's Pi, Watterson's Theta, Tajima's D respectively; Mandatory
+
+=item B<--region>
+
+Provide a subregion in which the measure should be calculated using a sliding window approach; has to be of the form chr:start-end; eg 2L:10000-20000; Example: C<--region "chr2:100-1000"> Optional
 
 =item B<--pool-size>
 

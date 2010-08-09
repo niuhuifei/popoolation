@@ -1,536 +1,557 @@
-#!/usr/bin/perl-w
 use strict;
 use warnings;
-use Getopt::Long;
 use Pod::Usage;
-use File::Basename;
-use File::Path;
-#Date: 23-02-2010
-# Author: Ram Vinay Pandey 
+use Getopt::Long;
+use FindBin qw($RealBin);
+use lib "$RealBin/Modules";
+use BasicUtility;
 
-# Define the variables
-my $inputfile = "";
-my $outputfile = "";
-my $number_of_species = 3;
-my $alignment_dir = "";
-my ($covered_length,$alignment_with_gap,$alignment_without_gap,$st,$nd) = (0,0,0,0,0);
-my @startpos = ();
-my @endpos = ();
+my $output="";
+my $input="";
+my $refinput="";
+my $sort=1;
+my $crosscheck=0;
 my $help=0;
 my $test=0;
-my $verbose=1;
-
-
 
 GetOptions(
-    "alignment-dir=s"=>\$alignment_dir,
-    "output=s"=>\$outputfile,
-    "help" =>\$help,
-    "test"=>\$test
-) or pod2usage(-msg=>"Option(s) not valid $!",-verbose=>1);
+    "ref-input=s"	    	=>\$refinput,
+    "input=s"               	=>\$input,
+    "output=s"              	=>\$output,
+    "no-sort"		    	=>sub{$sort=0},
+    "crosscheck"		=>\$crosscheck,
+    "help"                  	=>\$help,
+    "test"                  	=>\$test
+    ) or die "Could not parse arguments";
 
 pod2usage(-verbose=>2) if $help;
-Test::runTests() if $test;
+MauveTest::runTests() if $test;
+pod2usage(-msg=>"Could not open reference file",-verbose=>1) unless -e $refinput;
+pod2usage(-msg=>"Could not find input file",-verbose=>1) unless -e $input;
+pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
 
-pod2usage(-msg=>"Provide Mauve alignment output directory path as input directory\n",-verbose=>1) unless $alignment_dir ;
-pod2usage(-msg=>"A output file has to be provided\n",-verbose=>1) unless $outputfile;
+my $ofstrans 		= Utility::get_offset_translator($refinput);
+my $mauveParser 	= Utility::get_mauve_parser($input,$ofstrans);
+
+
+my $outputunsorted=$output.".unsorted";
+
+open my $ofh,">",$outputunsorted or die "Could not open output file";
+
+print "Parsing the mauve output\n";
+while(my $al=$mauveParser->())
+{
+    next unless $al->{useful};
     
-
-
-my ( $name, $path, $extension ) = File::Basename::fileparse ( $outputfile, '\..*' );
-my $unaligned_region_output_file = $path."/".$name."-unaligned-regions.txt";
-
-#rmtree($alignment_dir, 0, 0) if(-d $alignment_dir);
-
-open my $ofh,">$outputfile" or die "Could not open file handle: $outputfile\n";
-open my $uofh,">$unaligned_region_output_file" or die "Could not open file handle: $unaligned_region_output_file\n";
-
-
-# Opening the mauve alignment files directory for reading.
-opendir(DIR, $alignment_dir) || die ("Cannot open directory $alignment_dir in mauve parser $!\n");
-my @files = readdir(DIR);
-closedir(DIR);
-
-
-
-
-print "\nMauve parsing started at\t". localtime() ." ....\n\n";
-
-print "\nChromosome\tTotal aligned length\tAligned without gap (%age)\tAligned with gap (%age)\tUnaligned (%age)\n";
-foreach my $file (@files) {
+    my $chr=$al->{chr};
+    my $pos=$al->{start};
+    my $seq=$al->{seq};
+    my $trseq=Utility::transpose_sequences($seq);
     
-    unless ( ($file eq ".") || ($file eq "..") || ($file eq ".DS_Store")) {
-	
-	my $f = $file;
-	my @f = split("-",$file);
-	my $chromosome = $f[0];
-	$inputfile = "$alignment_dir/$file";
-	my ( $name, $path, $extension ) = File::Basename::fileparse ( $file, '\..*' );
-	
-	if ($extension eq ".alignment") {
-	    
-	    my $data = [];
-	    ($alignment_with_gap,$alignment_without_gap,$st,$nd,$data) = MauveParser::Mauve_parser($inputfile,$outputfile,$chromosome,$ofh);
-	    
-	    my $chr_length = ($$nd[-1] - $$st[0])+1;
-	    my $unaligned_region = MauveParser::calculate_unaligned_region($chromosome,$chr_length,$st,$nd,$uofh);
-	    
-	    #push (@$data,@$d);
-	    my $stat = MauveParser::calculate_alignment_statistics($chr_length,$alignment_with_gap,$alignment_without_gap,$unaligned_region);
-	    #my $stat = MauveParser::write_output($ofh,$data,$chr_length);
-	    print "$chromosome\t$stat\n";
-	    
-	}
-		
+    
+    foreach my $tr (@$trseq)
+    {
+	next if $tr->[0] eq "-";
+	my $temp=join("\t",@$tr);
+	print $ofh "$chr\t$pos\t$temp\n";
+	$pos++;
     }
+}
+close $ofh;
+
+# optional step - crosschecking the results
+if($crosscheck)
+{
+    print "Starting to crosscheck refence character\n";
     
+    print "Loading the reference sequence $refinput into hash\n";
+    my $refhash=load_fasta($refinput);
+    
+    print "Parsing unsorted output file $outputunsorted\n";
+    open my $ifh, "<", $outputunsorted or die "Could not open output file $outputunsorted\n";
+    
+    while(my $l=<$ifh>)
+    {
+	chomp $l;
+	my($chr,$pos,$refc)=split /\t/,$l;
+	my $refcontrol=substr($refhash->{$chr},$pos-1,1);
+	die "Not fitting character states in chromosome $chr; at position $pos; $refc not equal to $refcontrol\n" unless $refc eq $refcontrol;
+    }
+    close $ifh;
+    print "Finished crosschecking: everything is fine\n";
 }
 
-print "\n\nMauve parsing completed at\t". localtime() ." ....\n";
-exit;		
+# optional step - sorting
+if ($sort)
+{
+    print "Sorting the output file\n";
+    my $command="sort -k 1,1 -k 2,2n $outputunsorted > $output";
+    print "Executing command: $command\n";
+    system($command);
+    unlink ($outputunsorted);
+}
+print "Finished\n";
+exit;
 
 
-##########################################################################################
-# MauveParser package contians many utility functions to parse the Mauve alignment output
-# file and creates the tab delimeted output file.
-##########################################################################################
 
 {
-    package MauveParser;
+    package Utility;
+    use strict;
+    use warnings;
     
-    sub write_output {
-	
-	my ($ofh,$data) = (shift,shift);
-	my ($aligned_gap,$aligned) = (0,0);
-	
-	#[ sort {$a->{chr} cmp $b->{chr} or $a->{pos} <=> $b->{pos} } @$data];
-	$data = [ sort { $a->{pos} <=> $b->{pos} } @$data];
-	for my $d (@$data) {
-	    
-	    print $ofh "$d->{chr}\t$d->{pos}\t$d->{astate}\t$d->{dstate}\t$d->{sp1}\t$d->{sp2}\t$d->{sp3}\n";
-	    
-	    if (($d->{sp1} eq "-") or ($d->{sp2} eq "-") or ($d->{sp3} eq "-")) {
-		$aligned_gap++;
-	    }
-	    else {
-		$aligned++;
-	    }
-	    
-	}
-
-	return ($aligned,$aligned_gap);
+    sub load_reference
+    {
+	my $ref=shift;
+	open my $ifh, "<",$ref or die "Could not open input file";
     }
     
-
-    sub calculate_alignment_statistics {
+    
+    sub transpose_sequences
+    {
+	my $seq=shift;
 	
-	my ($chr_length,$alignment_with_gap,$alignment_without_gap,$unaligned_region) = (shift,shift,shift,shift);
+	my $sleng=length($seq->[0]);
+	my $filenr=@$seq;
+	my $transposed=[];
 	
-	my ($percent1,$percent2,$percent3) = (0,0,0);
-
-        if ($alignment_without_gap>0) {
-	    $percent1 = ($alignment_without_gap/$chr_length)*100;
+	for (my $i=0; $i<$sleng; $i++)
+	{
+	    my $entry=[];
+	    
+	    for(my $k=0; $k<$filenr; $k++)
+	    {
+		push @$entry,substr($seq->[$k],$i,1);
+	    }
+	    push @$transposed,$entry;
 	}
-	
-	if ($alignment_with_gap>0) {
-	    $percent2 = ($alignment_with_gap/$chr_length)*100;
-	}
-	if ($unaligned_region>0) {
-	    $percent3 = ($unaligned_region/$chr_length)*100;
-	}
-	
-        $percent1 = sprintf "%.2f",$percent1;
-        $percent2 = sprintf "%.2f",$percent2;
-	$percent3 = sprintf "%.2f",$percent3;
-	
-	#print "$chr_length\t$aligned ($percent1)\t$aligned_gap ($percent2)\t$unaligned ($percent3)";
-	
-	my $stat = "";
-	$stat = "$chr_length\t$alignment_without_gap ($percent1)\t$alignment_with_gap ($percent2)\t$unaligned_region ($percent3)";
-	return $stat;
-	
+	return $transposed;	
     }
-    ##########################################################################################
-    # Mauve_parser function parses the Mauve alignment output
-    # file and creates the tab delimeted output file.
-    ##########################################################################################
-    sub Mauve_parser {
+
+    
+    sub get_mauve_parser
+    {
+	my $infile=shift;
+	my $ofstrans=shift;
+	open my $ifh,"<",$infile or die "could not open mauve reader";
 	
-	my ($inputfile,$outputfile,$chr,$ofh) = (shift,shift,shift,shift);
+	# read the header
+	# files
+	my $filecount=0;
 	
-	my $covered_length = 0;
-	my $partner_count = 0;
-	my @startpos = ();
-	my @endpos = ();
-	my $data = [];
-	my ($alignment_with_gap,$alignment_without_gap) = (0,0);
-	open (IN,"<$inputfile") || die ("could not open file $inputfile for reading $!\n");
-
-	my $ct1 = 0;
-
-	my @lines = ();
-	while(my $line = <IN>) {
-	    chomp $line;
-
-	    # discard blank line
-		if ($line =~ m/^\s*$/g) {
-		    next;
-		}
-		# discard comment line
-		elsif($line =~ m/^#/) {
-		    next;
-		}
-		elsif ($line =~ m/=/) {
-		    $ct1++;
-		    foreach my $l(@lines) {
-			if($l =~ m/\>/) {
-			    $partner_count++;
-			}
-		    }
-
-		    if($partner_count==$number_of_species) {
-			
-			my $aligned_block_sequence = MauveParser::remove_linebreak(\@lines,$outputfile);
-
-			$covered_length += $$aligned_block_sequence[0]->{alignment_length};
-			push (@startpos,$$aligned_block_sequence[0]->{startpos});
-			push (@endpos,$$aligned_block_sequence[0]->{endpos});
-			
-			# Calculate the allelic states.
-			my ($aligned,$aligned_gap) = MauveParser::calculate_allelic_state($aligned_block_sequence,$chr,$ofh);
-			#my ($aligned,$aligned_gap) = MauveParser::write_output($ofh,$d);
-			
-			$alignment_with_gap += $aligned_gap;
-			$alignment_without_gap += $aligned;
-			
-			#push (@$data,@$d);
-		    }
+	print "Reading Mauve header\n";
+	while(my $l=<$ifh>)
+	{
+	    chomp $l;
+	    die "Mauve Header must start with a #" unless $l=~m/^#/;
+	    last if $l=~m/#BackboneFile/;
+	    $filecount++ if $l=~/^#Sequence\d+Format/
+	}
+	
+	return sub {
+	    # > 1:85628728-85628764 + /Volumes/Volume_4/analysis/divergence/ref/dmel-short.fasta
+	    # TGCGAGCATGCACCAAATACTGATCCAAGGCACTCTG
+	    # > 2:102772205-102772235 + /Volumes/Volume_4/analysis/divergence/ref/dsim-short.fasta
+	    # TGCGGGCATGCACCAGATACTGATCCAAGGC------
+	    # > 3:0-0 + /Volumes/Volume_4/analysis/divergence/ref/dyak-short.fasta
+	    # -------------------------------------
+	    # =
+	    # initialize with the default
+	    my $entries=[];
+	    
+	    my $header="";
+	    my $seq="";
+	    while(my $l=<$ifh>)
+	    {
+		chomp $l;
+		next if $l=~m/^#/;
+		
+		if($l=~m/^=/)
+		{
+		    my $e=_parseEntry($header,$seq);
+		    $entries->[$e->{fnr}]=$e;
 		    
-		    @lines = ();
-		    $partner_count=0;
+		    # annotate the entries
+		    return _annotateEntries($entries,$filecount,$ofstrans);
 		}
-		
-		else {
-		    push(@lines,$line);
-		}
-		
-		#last if $ct1>1;
-	}
-
-	close IN;
-	return ($alignment_with_gap,$alignment_without_gap,\@startpos,\@endpos);
-    }
-    
-    
-    ##########################################################################################
-    # remove_linebreak function removed the newline and carriege return character from the
-    # end of each line of Mauve alignment output file.
-    ##########################################################################################
-    sub remove_linebreak {
-	
-	my $alignment_block = shift;
-	
-	my @alignment_block = @{$alignment_block};
-	my @alignment_block_sequences = ();
-	push(@alignment_block,">");
-	my @alignment_block_temp = ();
-
-
-	foreach my $line(@alignment_block) {
-
-	    if($line =~ m/\>/) {
-
-		my $seq = "";
-		if (scalar(@alignment_block_temp)>0) {
-		    foreach my $l (@alignment_block_temp) {
-			$seq .= $l;
+		elsif($l=~m/^>/)
+		{
+		    if($header)
+		    {
+			my $e=_parseEntry($header,$seq);
+			$entries->[$e->{fnr}]=$e;
 		    }
+		    $header=$l;
+		    $seq="";
 		}
-
-		push(@alignment_block_sequences,$seq);
-		push(@alignment_block_sequences,$line);
-		
-		$seq = "";
-		@alignment_block_temp = ();
-		
-	    }
-	    else {
-		push(@alignment_block_temp,"$line");
-	    }
-	}
-
-	shift(@alignment_block_sequences);
-	pop(@alignment_block_sequences);
-	
-	my $ct=0;
-
-	my $header = "";
-
-	my $aligned_block_sequence = [];
-	
-	foreach my $line (@alignment_block_sequences) {
-	    chomp $line;
-	    # discard blank line
-	    if ($line =~ m/^\s*$/g) {
-		next;
-	    }
-	    # discard comment line
-	    elsif($line =~ m/^#/) {
-		next;
-	    }
-	    elsif($line =~ m/\>/) {
-		$header = $line;	    
-	    }
-	    else {
-		#> 1:26790-236196 + /Volumes/Main/fst-project-05-01-2010/fisher-exact-test/Mauve-analysis/chr-input-flybase/4-dmel.fasta
-		my @fasta_header = split(" ",$header);
-		
-		my $strand = $fasta_header[2];
-		
-		$fasta_header[1] =~ m/(.*)\:(.*)\-(.*)/;
-		my ($start,$end,$length) = ($2,$3,(abs($3-$2))+1);
-		
-		my ( $filename, $path, $extension ) = File::Basename::fileparse ( $fasta_header[3], '\..*' );
-		push @$aligned_block_sequence,
+		else
 		{
-		seqheader=>$header,
-		sequence=>$line,
-		strand=>$strand,
-		file=>$filename,
-		startpos=>$start,
-		endpos=>$end,
-		alignment_length=>$length
-		};
+		    $seq.=$l;
+		}
 	    }
+	    return undef;
+	} 
+    }
+    
+    sub _parseEntry
+    {
+	my $header=shift;
+	my $seq=shift;
+	
+	#> 2:102772205-102772235 + /Volumes/Volume_4/analysis/divergence/ref/dsim-short.fasta
+	my($filenum,$start,$end,$strand)=$header=~m/^>\s*(\d+):(\d+)-(\d+)\s*([+-])/;
+	
+	return {
+	    fnr=>	$filenum,
+	    start=>	$start,
+	    end=>	$end,
+	    seq=>	$seq,
+	    strand=>	$strand,
+	    header=>	$header
+	};
+    }
+    
+    sub _annotateEntries
+    {
+	my $entries=shift;
+	my $filecount=shift;
+	my $ofstrans=shift;
+	
+	my $an={
+	    seq=>[],
+	    useful=>0
+	};
+	
+	return $an unless ($entries->[1]);
+	
+	my $refe=$entries->[1];
+	my $strand=$refe->{strand};
+	my ($s_chr,$s_pos)=$ofstrans->($refe->{start});
+	my ($e_chr,$e_pos)=$ofstrans->($refe->{end});
+	
+	return $an unless $s_chr eq $e_chr;
+	
+	# get the sequences;
+	# if the reference is reverse complement, everything has to be reverse complemented
+	my $refleng=length($refe->{seq});
+	my $seqs=[];
+	for my $nr (1..$filecount)
+	{
+	    my $seq;
+	    if($entries->[$nr])
+	    {
+		$seq=$entries->[$nr]{seq};
+	    }
+	    else
+	    {
+		$seq= "-"x$refleng;
+	    }
+	    
+	    $seq = _rc_mauve($seq) if $strand eq "-";
+	    
+	    die "sequence length disagreing" unless length($seq) == $refleng;
+	    push @$seqs,$seq;
 	}
-
-	return $aligned_block_sequence;
+	
+	# set the sequence
+	$an->{seq}=$seqs;
+	$an->{useful}=1;
+	$an->{chr}=$s_chr;
+	$an->{start}=$s_pos;
+	return $an;
+    }
+    
+    sub _rc_mauve
+    {
+        my $seq=shift;
+        $seq=reverse($seq);
+        $seq=~tr/-ATCGNatcgn/-TAGCNtagcn/;
+        return $seq;
     }
     
     
-    ##########################################################################################
-    # calculate_allelic_state function calculates the allelic state in species 1, 2 and 3
-    # at each locus within alignment block.
-    ##########################################################################################
-    
-    sub calculate_allelic_state {
-	my ($aligned_block_sequence,$chr) = (shift,shift,$ofh);
-	my $data=[];
-	my $alleles = [];
+    sub get_offset_translator
+    {
+	my $reffile=shift;
 	
-	my @seq1 = split("",$$aligned_block_sequence[0]->{sequence});
-	my @seq2 = split("",$$aligned_block_sequence[1]->{sequence});
-	my @seq3 = split("",$$aligned_block_sequence[2]->{sequence});
-	my ($aligned_gap,$aligned) = (0,0);
+	# will already be sorted properly
+	# [{chr,pos},{chr,pos}]
+	# offset is the first position of a new reference using a one based counting
+	print "Reading reference sequence $reffile to calculate the offsets used in the Mauve multi-fasta alignment\n";
+	my $ofsets=_readreference($reffile); 
 	
-	my $startpos = $$aligned_block_sequence[0]->{startpos};
-
-	for(my $i=0; $i<scalar(@seq1);$i++) {
+	
+	return sub
+	{
+	  my $position=shift;
+	  my $ofs=_search($ofsets,$position);
+	  
+	  my $chr=$ofs->{chr};
+	  
+	  # ofset is one-based; first base is 1;
+	  #> fasta1
+	  #ATCG  1234
+	  #> fasta2
+	  #TGAA 5678
+	  #
+	  # position in mauve is also one based
+	  #
+	  #if I have 6 I mean second position in  > fasta2
+	  # 6-5+1=2
+	  my $posinchr=$position-$ofs->{pos}+1;
+	  
+	  return ($chr,$posinchr);
 	    
-	    if (($seq1[$i] eq "-") or ($seq2[$i] eq "-") or ($seq3[$i] eq "-")) {
-		$aligned_gap++;
-	    }
-	    else {
-		$aligned++;
-	    }
-		
-	    if (($seq1[$i] ne "-") and ($seq2[$i] ne "-") and ($seq3[$i] ne "-")) {
-		push @$alleles,
-		my $alleles = {
-		    sp1=>$seq1[$i],
-		    sp2=>$seq2[$i],
-		    sp3=>$seq3[$i]
-		};
-		
-		my ($ancestral_state,$derived_state) = MauveParser::check_allelic_state($alleles);
-		print $ofh "$chr\t$startpos\t$ancestral_state\t$derived_state\t$seq1[$i]\t$seq2[$i]\t$seq3[$i]\n";
-		
-		
-		$alleles = {};
-		
-		#print $ofh "$chr\t$startpos\t$ancestral_state\t$derived_state\t$seq1[$i]\t$seq2[$i]\t$seq3[$i]\n";
-		$startpos++;
-	    }
-	}
-	return ($aligned,$aligned_gap);
-    } # Closed function calculate_allelic_state
-    
-    
-    ##########################################################################################
-    # check_allelic_state function calculates the parental and derived allelic state
-    # based upon 3 species allelic state at each locus within alignment block.
-    ##########################################################################################
-    
-    sub check_allelic_state {
-	
-	my $alleles = shift;
-	# $alleles->{sp1}    = Drosophila melanogaster
-	# $alleles->{sp2}   =  Drosophila simulans
-	# $alleles->{sp3}   =  Drosophila yakuba
-	
-	my ($ancestral_state,$derived_state) = ("","");
-	
-	if(($alleles->{sp1} =~ m/N/gi) or ($alleles->{sp2} =~ m/N/gi) or ($alleles->{sp3} =~ m/N/gi)) {
-	    ($ancestral_state,$derived_state) = ("na","na");
-	}
-	elsif(($alleles->{sp1} eq "-") or ($alleles->{sp2} eq "-") or ($alleles->{sp3} eq "-")) {
-	    ($ancestral_state,$derived_state) = ("na","na");
-	}
-	else {
-	    if (("$alleles->{sp2}" eq "$alleles->{sp3}") and ("$alleles->{sp1}" ne "$alleles->{sp2}")) {
-		($ancestral_state,$derived_state) = ("$alleles->{sp3}","$alleles->{sp1}");
-	    }
-	    elsif (("$alleles->{sp1}" eq "$alleles->{sp3}") and ("$alleles->{sp1}" ne "$alleles->{sp2}")) {
-		($ancestral_state,$derived_state) = ("$alleles->{sp1}","0");
-	    }
-	    elsif (("$alleles->{sp2}" eq "$alleles->{sp3}") and ("$alleles->{sp1}" eq "$alleles->{sp2}")) {
-		($ancestral_state,$derived_state) = ("$alleles->{sp1}","0");
-	    }
-	    else {
-		($ancestral_state,$derived_state) = ("na","na");
-	    }
-	}
-	return ($ancestral_state,$derived_state);
-    }
-    
-    
-    
-    ##########################################################################################
-    # calculate_unaligned_region function calculates the unaligned region with respect to
-    # reference chromosome.
-    ##########################################################################################
-    
-    sub calculate_unaligned_region {
-	my ($chromosome,$chr_length,$st,$nd,$ofh) = (shift,shift,shift,shift,shift);
-	my @startpos = @{$st};
-	my @endpos = @{$nd};
-	my $data = [];
-	# Calculating the unaligned region of given chromosome
-
-	shift(@startpos);
-	my $last_endpos = pop(@endpos);
-	
-	my $unaligned_region = 0;
-	for (my $i=0;$i<scalar(@startpos);$i++) {
-	    my $st1 = $endpos[$i]+1;
-	    my $nd1 = $startpos[$i]-1;
-	    
-	    my $length = ($nd1-$st1)+1;
-	    $unaligned_region += $length;
-	    
-	    my $lengthKB = $length/1000;
-	    $lengthKB = sprintf "%.2f",$lengthKB;
-	    print $ofh "$chromosome\t$st1\t$nd1\t$length\t$lengthKB\n";
-=cut
-	    for my $i ($st1 .. $nd1) {
-	    push @$data,
-		{
-		    chr=>$chromosome,
-		    pos=>$i,
-		    astate=>0,
-		    dstate=>0,
-		    sp1=>0,
-		    sp2=>0,
-		    sp3=>0
-		};
-	    }
-=cut
-	    
-	}
-	return $unaligned_region;
+	};
 	
     }
     
-
-} # MauveParser package completed
-
-
-#
-#    "chralignment-dir=s"=>\$alignment_dir,
-#    "output=s"=>\$outputfile,
-#    "help" =>\$help,
-#    "test"=>\$test
+    sub _readreference
+    {
+	my $reffile=shift;
+	
+	open my $ifh,"<", $reffile or die "Could not open reference file";
+	
+	# fist position in the genome is 1! so this is a one based array
+	my $activecounter=1; 
+	my $ofsetar=[];
+	while(my $l=<$ifh>)
+	{
+	    chomp $l;
+	    if($l=~m/^>/)
+	    {
+		$l=~s/^>//;
+		$l=~s/\s+.*$//;
+		push @$ofsetar,{
+		    chr=>$l,
+		    pos=>$activecounter
+		};
+	    }
+	    else
+	    {
+		$l=~s/^\s+//;
+		$l=~s/\s+$//;
+		$activecounter+=length($l);
+	    }
+	}
+	# ofset is the first position in the new reference, using a one based counting
+	return $ofsetar;
+    }
     
+    sub _search
+    {
+        # Binary search for the correct annotation
+	# [{chr,pos},{chr,pos}]
+        my $ofsetar=shift;
+        my $position=shift;
+	
+	my $i=0;
+	for(;$i<@$ofsetar; $i++)
+	{
+	    return $ofsetar->[$i-1] if $position<$ofsetar->[$i]{pos};
+	}
+	
+	return $ofsetar->[$i-1];
+    }
+}
+
+{
+    package MauveTest;
+    use strict;
+    use warnings;
+    use Test;
+    
+    
+    sub runTests
+    {
+	test_offset_translator();
+	test_transpose();
+	test_mauveParser();
+	exit;
+    }
+    
+    sub test_offset_translator
+    {
+	my $str;
+	my $ot;
+	my($c,$p);
+	$str=
+	">f1\n".
+	"ATAC\n".
+	">f2\n".
+	"GAAT\n".
+	">f3\n".
+	"CACG\n";
+	$ot=Utility::get_offset_translator(\$str);
+	($c,$p)=$ot->(1);
+	
+	is($c,"f1","offset calculator, chromosome correct");
+	is($p,1, "offset calculator, position is correct");
+	($c,$p)=$ot->(4);
+	is($c,"f1","offset calculator, chromosome correct");
+	is($p,4, "offset calculator, position is correct");
+	($c,$p)=$ot->(5);
+	is($c,"f2","offset calculator, chromosome correct");
+	is($p,1, "offset calculator, position is correct");
+	($c,$p)=$ot->(8);
+	is($c,"f2","offset calculator, chromosome correct");
+	is($p,4, "offset calculator, position is correct");
+	($c,$p)=$ot->(9);
+	is($c,"f3","offset calculator, chromosome correct");
+	is($p,1, "offset calculator, position is correct");
+	($c,$p)=$ot->(12);
+	is($c,"f3","offset calculator, chromosome correct");
+	is($p,4, "offset calculator, position is correct");
+    }
+    
+    sub test_transpose
+    {
+	my $str;
+	my $tr;
+	$str=["AATTCC","--ATCG","TT--GG"];
+	$tr=Utility::transpose_sequences($str);
+	is($tr->[0][0],"A","Sequence transposing correct");
+	is($tr->[0][1],"-","Sequence transposing correct");
+	is($tr->[0][2],"T","Sequence transposing correct");
+
+	is($tr->[2][0],"T","Sequence transposing correct");
+	is($tr->[2][1],"A","Sequence transposing correct");
+	is($tr->[2][2],"-","Sequence transposing correct");
+
+	is($tr->[3][0],"T","Sequence transposing correct");
+	is($tr->[3][1],"T","Sequence transposing correct");
+	is($tr->[3][2],"-","Sequence transposing correct");
+	
+	is($tr->[4][0],"C","Sequence transposing correct");
+	is($tr->[4][1],"C","Sequence transposing correct");
+	is($tr->[4][2],"G","Sequence transposing correct");
+
+	is($tr->[5][0],"C","Sequence transposing correct");
+	is($tr->[5][1],"G","Sequence transposing correct");
+	is($tr->[5][2],"G","Sequence transposing correct");
+
+    }
+    
+    sub test_mauveParser
+    {
+	my($ref,$ot,$c,$p);
+	my($ms,$mp,$al);
+	$ref=
+	">f1\n".
+	"ATAC\n".
+	">f2\n".
+	"GAAT\n".
+	">f3\n".
+	"CACG\n";
+	$ot=Utility::get_offset_translator(\$ref);
+	
+	$ms=
+	"#Sequence1Format\n".
+	"#Sequence2Format\n".
+	"#Sequence3Format\n".
+	"#BackboneFile\n".
+	"> 1:5-8 + \n".
+	"GATT\n".
+	"> 2:100-10000 - \n".
+	"C-TT\n".
+	"> 3:12-15 + \n".
+	"G--T\n".
+	"=\n";
+	$mp= Utility::get_mauve_parser(\$ms,$ot);
+	$al=$mp->();
+	
+	is($al->{chr},"f2","Mauve parser: chromosome correct");
+	is($al->{start},1,"Mauve parser: start position is correct");
+	is($al->{useful},1,"Mauve parser: is useful");
+	is($al->{seq}[0],"GATT","Mauve parser: sequence is correct");
+	is($al->{seq}[1],"C-TT","Mauve parser: sequence is correct");	
+	is($al->{seq}[2],"G--T","Mauve parser: sequence is correct");	
+
+
+	$ms=
+	"#Sequence1Format\n".
+	"#Sequence2Format\n".
+	"#Sequence3Format\n".
+	"#BackboneFile\n".
+	"> 1:5-8 - \n".
+	"GATT\n".
+	"> 3:100-10000 - \n".
+	"C-TT\n".
+	"=\n";
+	$mp= Utility::get_mauve_parser(\$ms,$ot);
+	$al=$mp->();
+	
+	is($al->{chr},"f2","Mauve parser: chromosome correct");
+	is($al->{start},1,"Mauve parser: start position is correct");
+	is($al->{useful},1,"Mauve parser: is useful");
+	is($al->{seq}[0],"AATC","Mauve parser: sequence is correct");
+	is($al->{seq}[1],"----","Mauve parser: sequence is correct");	
+	is($al->{seq}[2],"AA-G","Mauve parser: sequence is correct");	
+    }
+}
+
+
+
+    #"ref-input=s"	    	=>\$refinput,
+    #"input=s"               	=>\$input,
+    #"output=s"              	=>\$output,
+    #"no-sort"		    	=>sub{$sort=0},
+    #"crosscheck"		=>\$crosscheck,
+    #"help"                  	=>\$help,
+    #"test"                  	=>\$test
 =head1 NAME
 
-mauve-parser.pl - Parses the Mauve chromosome alignement output file for given number of chromosomes.
+perl mauve-parser.pl - Parse a multiple genome alignment as generated by Mauve.
 
 =head1 SYNOPSIS
 
- perl mauve-parser.pl --alignment-dir mauve-alignment-files-dir --output mauve-parser-output.txt
+perl mauve-parser.pl --ref-input d.melanogaster.fa  --input d.three-way-align.mfa --output mel-guided-alignment.txt
 
 =head1 OPTIONS
 
 =over 4
 
-=item B<--alignment-dir>
+=item B<--ref-input>
 
-the input directory/folder full path where Mavue alignment output for one or multiple chromosome are stored: "file name should be Chromosome-alignment.alignment", example: 2L-alignment.alignment.
+A fasta file containing the full genome of the first sequence provided to mauve! This will act as the anchor or reference of the multiple alignment; Mandatory
 
+=item B<--input>
+
+A multiple genome alignment created by Mauve (mfa); Mandatory
 
 =item B<--output>
 
-The output file. Mandatory parameter
+The output file; Mandatory
 
+=item B<--no-sort>
 
-=item B<--test>
+Disable sorting of the output;
 
-Run the unit tests for this script. 
+=item B<--crosscheck>
 
-=item B<--help>
-
-Display help for this script
+Enable crosschecking of the alignment. This step is memory intense but recommendet. It checks if every base in the C<--output> is in agreement with the corresponding base in the C<--ref-input>.
 
 =back
 
+
 =head1 Details
 
-=head2 Input
-
-Input is a folder/directoy which contains mauve alignment output for all chromosomes. Within input directory each mauve multiple alignment output file looks like following:
-
- #FormatVersion Mauve1
- #Sequence1File	2L-dmel.fasta
- #Sequence1Format	FastA
- #Sequence2File	Kib32_sorted_merged_2L.fa
- #Sequence2Format	FastA
- #Sequence3File	2L-dyak.fasta
- =
- > 1:1781127-1781186 + 2L-dmel.fasta
- GCTGTCAGCAATTTGATTTGATTTGCCAACTCTGCAAAAATATTTCATAAATATTTGGCC
- > 2:1762817-1762876 - Kib32_sorted_merged_2L.fa
- GCTGTCAGCAATTTGATTTGATTTGCCAACTCTGCAAAAATATTTCATAAATATTTGCCC
- > 3:1756489-1756548 + 2L-dyak.fasta
- GCTGTCAGCAATTTGATTTGATTTGCCAACTCTGCGAAAATATTTCATAAATATTTGCCC
- =
- First sequence should be of reference chromosome (Example D. melanogaster chromosome sequence)
- Second sequence should be of intermidate species chromosome (Example D. simulans chromosome sequence)
- Third sequence should be of outgroup species chromosome (Example D. yakuba chromosome sequence)
- 
 =head2 Output
 
-An output of this program looks like in the given example:
+A multiple genome alignment where the first sequence provided to Mauve acts as the reference.
 
- 2L	5783	na	na	G	G	G
- 2L	5784	na	na	C	C	C
- 2L	5785	na	na	C	T	G
-
- col 1: reference chromosome
- col 2: position in the reference chromosome
- col 3: ancestral allelic state
- col 4: derived allelic state
- col 5: allelic state in species 1 (reference species)
- col 6: allelic state in species 2
- col 7: allelic state in species 3 (out group species)
-
-=head1 AUTHORS
-
-Ram vinay pandey
-
-Robert Kofler
-
-Pablo Orozco terWengel
-
-Christian Schloetterer
+ YHet    291809  T       A       T
+ YHet    291810  T       T       T
+ YHet    291811  T       A       A
+ YHet    291812  T       C       T
+ YHet    291813  A       A       A
+ 
+ col 1: chromosome (contig); with respect to the reference genome
+ col 2: position in the given chromosome (contig)
+ col 3: character state in the first genome (the reference character)
+ col 4: character state in the second genome
+ col 5: and so on...
 
 =cut
+
+
