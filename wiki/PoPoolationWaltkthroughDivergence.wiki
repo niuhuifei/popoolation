@@ -71,3 +71,9 @@ This will create an output like this:
 {{{
 perl calculate-divergence.pl --input multi-align-dmel-anchored --window-size 1000 --step-size 1000 --output divergence
 }}}
+
+== Reformat for the script Visualize-output.pl ==
+
+{{{
+awk 'BEGIN{OFS="\t"}{print $1,$2,"-","-",$3}' divergence > divergence.reformated
+}}}
