@@ -67,3 +67,7 @@ This will create an output like this:
   * column 5: the reference character of _D. yakuba_
 
 == Calculate the divergence using a sliding window approach ==
+
+{{{
+perl calculate-divergence.pl --input multi-align-dmel-anchored --window-size 1000 --step-size 1000 --output divergence
+}}}
