@@ -77,3 +77,8 @@ perl calculate-dxy.pl --input multi-align-dmel-anchored  --window-size 50000 --s
 {{{
 awk 'BEGIN{OFS="\t"}{print $1,$2,"-","-",$3}' divergence > divergence.reformated
 }}}
+
+== Create a graphical overview ==
+{{{
+perl ~/dev/PopGenTools/Visualise-output.pl --input divergence.reformated --output dmel.div5k.pdf --ylab dxy --chromosomes "X 2L 2R 3L 3R 4"
+}}}
