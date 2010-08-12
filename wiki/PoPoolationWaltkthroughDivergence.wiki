@@ -84,4 +84,4 @@ perl ~/dev/PopGenTools/Visualise-output.pl --input divergence.reformated --outpu
 }}}
 
 The result should be like this:
-http://popoolation.googlecode.com/files/dmel.pi.pdf
+http://popoolation.googlecode.com/files/dmel.div5k.pdf
