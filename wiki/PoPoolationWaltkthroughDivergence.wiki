@@ -82,3 +82,6 @@ awk 'BEGIN{OFS="\t"}{print $1,$2,"-","-",$3}' divergence > divergence.reformated
 {{{
 perl ~/dev/PopGenTools/Visualise-output.pl --input divergence.reformated --output dmel.div5k.pdf --ylab dxy --chromosomes "X 2L 2R 3L 3R 4"
 }}}
+
+The result should be like this:
+http://popoolation.googlecode.com/files/dmel.pi.pdf
