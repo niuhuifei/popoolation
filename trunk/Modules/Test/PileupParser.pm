@@ -14,8 +14,31 @@
     
     sub run_PileupParserTests
     {
+        test_basicPileupParser();
         test_parsePileup();
         test_parseExtendedPileup();
+    }
+    
+    sub test_basicPileupParser
+    {
+        my $pp;
+        my $res;
+        $pp=get_basic_parser("illumina",20);
+        $res=$pp->("dralala\t2\tN\t5\tATCGATCGATCG\tZYXWVUTSRQPO");
+        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{A},2,"basic pileup parser; A count is ok");
+        is($res->{T},2,"basic pileup parser; T count is ok");
+        is($res->{C},2,"basic pileup parser; C count is ok");
+        is($res->{G},1,"basic pileup parser; G count is ok");
+        
+        $pp=get_basic_parser("illumina",20);
+        $res=$pp->("dralala\t2\tN\t5\tAT^FC\$GATCGATCG\tZYXWVUTSRQPO");
+        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{totcov},7,"parsePileup; coverage is ok");
+        is($res->{A},2,"basic pileup parser; A count is ok");
+        is($res->{T},2,"basic pileup parser; T count is ok");
+        is($res->{C},2,"basic pileup parser; C count is ok");
+        is($res->{G},1,"basic pileup parser; G count is ok");
     }
     
     sub test_parsePileup
@@ -63,11 +86,11 @@
         #quality trimming
         $pp=get_pileup_parser("illumina",2,6,1000000,20);
         $res=$pp->("dralala\t2\tN\t5\tATCGATCGATCG\tZYXWVUTSRQPO");
-        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{eucov},6,"parsePileup; coverage is ok");
         is($res->{A},2,"parsePileup; A count is ok");
         is($res->{T},2,"parsePileup; T count is ok");
         is($res->{C},2,"parsePileup; C count is ok");
-        is($res->{G},1,"parsePileup; G count is ok");
+        is($res->{G},0,"parsePileup; G count is ok");
         
         # replacement
         $pp=get_pileup_parser("illumina",2,4,1000000,0);
@@ -85,35 +108,35 @@
         # special pileup characters
         $pp=get_pileup_parser("illumina",2,6,1000000,20);
         $res=$pp->("dralala\t2\tN\t5\tAT^FC\$GATCGATCG\tZYXWVUTSRQPO");
-        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{eucov},6,"parsePileup; coverage is ok");
         is($res->{totcov},7,"parsePileup; coverage is ok");
         is($res->{A},2,"parsePileup; A count is ok");
         is($res->{T},2,"parsePileup; T count is ok");
         is($res->{C},2,"parsePileup; C count is ok");
-        is($res->{G},1,"parsePileup; G count is ok");
+        is($res->{G},0,"parsePileup; G count is ok");
         
         # special pileup characters
         $pp=get_pileup_parser("illumina",2,6,1000000,20);
         $res=$pp->("dralala\t2\tN\t5\tA+12AAAAAAAAAAAAT^FC\$GATCGATCG\tZYXWVUTSRQPO");
-        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{eucov},6,"parsePileup; coverage is ok");
         is($res->{A},2,"parsePileup; A count is ok");
         is($res->{T},2,"parsePileup; T count is ok");
         is($res->{C},2,"parsePileup; C count is ok");
-        is($res->{G},1,"parsePileup; G count is ok");
+        is($res->{G},0,"parsePileup; G count is ok");
         
         $res=$pp->("dralala\t2\tN\t5\tA+2AAT^FC\$G-3CCCATCGATCG\tZYXWVUTSRQPO");
-        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{eucov},6,"parsePileup; coverage is ok");
         is($res->{A},2,"parsePileup; A count is ok");
         is($res->{T},2,"parsePileup; T count is ok");
         is($res->{C},2,"parsePileup; C count is ok");
-        is($res->{G},1,"parsePileup; G count is ok");
+        is($res->{G},0,"parsePileup; G count is ok");
         
         $res=$pp->("dralala\t2\tN\t5\tA-12CCCCCCCCCCCCT^FC\$GATCGATCG\tZYXWVUTSRQPO");
-        is($res->{eucov},7,"parsePileup; coverage is ok");
+        is($res->{eucov},6,"parsePileup; coverage is ok");
         is($res->{A},2,"parsePileup; A count is ok");
         is($res->{T},2,"parsePileup; T count is ok");
         is($res->{C},2,"parsePileup; C count is ok");
-        is($res->{G},1,"parsePileup; G count is ok");
+        is($res->{G},0,"parsePileup; G count is ok");
         
         
         # deletions:
@@ -159,7 +182,7 @@
         is($res->{consc_confidence},1,"extended parsePileup; confidence is ok");
 
         # both smaller and lower case characters are recognised
-        $res=$pp->("dralala\t2\tN\t9\tAaTTGCCcccNn\taaaaaaaaaaaa");
+        $res=$pp->("dralala\t2\tN\t9\tAaTTTCCcccNn\taaaaaaaaaaaa");
         is($res->{consc},"C","extended parsePileup; consensus character is ok");
         is($res->{consc_confidence},0.5,"extended parsePileup; confidence is ok");
         

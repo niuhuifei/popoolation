@@ -44,7 +44,6 @@ use Pileup;
     TestTrim::runTrimTests() if $test;
     pod2usage(-msg=>"Quality must be larger than 0",-verbose=>1) if $qualThreshold<0;
     pod2usage(-msg=>"Length must be larger than 0",-verbose=>1) if $minLength<1 ;  # min length has to be 1 or larger
-
     pod2usage(-msg=>"At least one input file has to be provided", -verbose=>1) unless -e $input1;
 
 
