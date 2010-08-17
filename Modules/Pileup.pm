@@ -138,6 +138,15 @@ sub get_pileup_parser
     return sub {
         my $line=shift;
         my $pu=$pp->($line);
+        
+        # reset the counts to zero if not fullfilling the minimum count
+        $pu->{A} =0 unless $pu->{A}>=$mincount;
+        $pu->{T} =0 unless $pu->{T}>=$mincount;
+        $pu->{C} =0 unless $pu->{C}>=$mincount;
+        $pu->{G} =0 unless $pu->{G}>=$mincount;
+        $pu->{eucov} = $pu->{A} + $pu->{T} + $pu->{C} + $pu->{G};
+        
+        
         $pu->{iscov}=0;
         $pu->{issnp}=0;
         if($pu->{eucov}>=$mincoverage && $pu->{eucov}<=$maxcoverage)

@@ -82,7 +82,7 @@ while(my $window=$reader->nextWindow())
 	    my($string)=Utility::calculateDxy($data,$pos,$chr,$win,$minCoverageFraction);
 	    #print "$coveredFrac\t$minCoverageFraction\n";
 	    print $ofh "$string\n";
-            print "$string\n";
+            #print "$string\n";
 	    
 	}
         else {
@@ -98,7 +98,7 @@ while(my $window=$reader->nextWindow())
 		    }
 		}
 		print $ofh "$chr\t$pos\tna\tna\tna\t$considered_pos\n";
-		print "$chr\t$pos\tna\tna\tna\t$considered_pos\n";
+		#print "$chr\t$pos\tna\tna\tna\t$considered_pos\n";
         }
  
 }

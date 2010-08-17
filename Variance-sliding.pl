@@ -361,8 +361,8 @@ exit;
     sub runTests
     {
         run_PileupParserTests();
-        run_VarianceTests();
         testPileupSlider();
+        run_VarianceTests();
         exit;
     }
     
@@ -412,7 +412,7 @@ exit;
         $str=
         "2L\t1\tA\t9\tCCCCCAAAA\tTTTTTTTTT\n".
         "2L\t2\tA\t7\tCCCCAAA\tTTTTTTT\n".
-        "2L\t3\tA\t5\tGGGTc\tTTTTT\n".
+        "2L\t3\tA\t5\tGGGGT\tTTTTT\n".
         "2L\t4\tA\t3\tCCA\tTTT\n".
         "2L\t5\tA\t2\tCA\tTT\n".
         "chr1\t3\tA\t7\tCCCCCCC\tTTTTTTT\n".
@@ -432,8 +432,8 @@ exit;
         is($win->{end},3,"PileupSlider; end position is ok");
         is($win->{data}[0]{A},4,"PileupSlider; allele count is ok");
         is($win->{data}[0]{C},5,"PileupSlider; allele count is ok");
-        is($win->{data}[2]{G},3,"PileupSlider; allele count is ok");
-        is($win->{data}[2]{T},1,"PileupSlider; allele count is ok");
+        is($win->{data}[2]{G},4,"PileupSlider; allele count is ok");
+        is($win->{data}[2]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[2]{issnp},0,"PileupSlider; issnp is ok");
         is($win->{data}[2]{iscov},1,"PileupSlider; iscov is ok");
         
@@ -444,10 +444,10 @@ exit;
         is($win->{count_snp},1,"PileupSlider; SNP count is ok");
         is($win->{start},1,"PileupSlider; start position is ok");
         is($win->{end},4,"PileupSlider; end position is ok");
-        is($win->{data}[1]{G},3,"PileupSlider; allele count is ok");
-        is($win->{data}[1]{T},1,"PileupSlider; allele count is ok");
+        is($win->{data}[1]{G},4,"PileupSlider; allele count is ok");
+        is($win->{data}[1]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[2]{C},2,"PileupSlider; allele count is ok");
-        is($win->{data}[2]{A},1,"PileupSlider; allele count is ok");
+        is($win->{data}[2]{A},0,"PileupSlider; allele count is ok");
         
         $win=$pilsl->nextWindow();
         is($win->{window},3,"PileupSlider; window ok");
@@ -456,8 +456,8 @@ exit;
         is($win->{count_snp},0,"PileupSlider; SNP count is ok");
         is($win->{start},2,"PileupSlider; start position is ok");
         is($win->{end},5,"PileupSlider; end position is ok");
-        is($win->{data}[0]{G},3,"PileupSlider; allele count is ok");
-        is($win->{data}[0]{T},1,"PileupSlider; allele count is ok");
+        is($win->{data}[0]{G},4,"PileupSlider; allele count is ok");
+        is($win->{data}[0]{T},0,"PileupSlider; allele count is ok");
         
         $win=$pilsl->nextWindow();
         is($win->{window},3,"PileupSlider; window ok");
@@ -533,7 +533,7 @@ exit;
         is($win->{data}[1]{N},2,"PileupSlider; N count is ok");
         is($win->{data}[2]{N},1,"PileupSlider; N count is ok");
         is($win->{data}[0]{eucov},7,"PileupSlider; eu-coverage is ok");
-        is($win->{data}[1]{eucov},6,"PileupSlider; eu-coverage is ok");
+        is($win->{data}[1]{eucov},5,"PileupSlider; eu-coverage is ok");
         is($win->{data}[2]{eucov},9,"PileupSlider; eu-coverage is ok");
         is($win->{data}[0]{totcov},8,"PileupSlider; total coverage is ok");
         is($win->{data}[1]{totcov},8,"PileupSlider; total coverage is ok");
