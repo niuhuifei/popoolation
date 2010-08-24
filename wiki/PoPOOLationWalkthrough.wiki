@@ -10,7 +10,9 @@
 || s_7_1_sequence_Jul2009.fastq||1||17957720||75||
 || s_7_2_sequence_Jul2009.fastq||2||17957720||75||
 
-*NOTE* The data set will be available upon publication of the !PoPoolation manuscript. Until then they may be requested from the author: rokofler (at) gmail.com and ssh access will sent. For the sake of your anonymity please create a temporary email account and contact me.
+*NOTE*: The data set will be available upon publication of the !PoPoolation manuscript. Until then they may be requested from the author: rokofler (at) gmail.com and ssh access will sent. For the sake of your anonymity please create a temporary email account and contact me.
+
+*NOTE*: A very small sample data set can alternatively be found in the Quick Guide: http://code.google.com/p/popoolation/wiki/TeachingPoPoolation 
 
 = Requirements =
 see [Manual]
