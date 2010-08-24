@@ -114,11 +114,20 @@ Index the bam file:
 samtools index maped.sort.bam
 }}}
 
+
+=== Calculate a genewise pi ===
+
 {{{
 perl <local-popoolation-installation>/Variance-at-position.pl --measure pi --pileup cyp6g1.pileup --gtf cyp6g1.gtf --output genewise.pi --pool-size 500 --min-count 2 --min-coverage 4 --max-coverage 70 --min-qual 20
 }}}
 
+Sort the output showing the genes with the smallest Tajima's Pi on top.
 
 {{{
 sort -k 4,4n genewise.pi> sorted-genewise.pi
+}}}
+
+view the output
+{{{
+less sorted-genewise.pi
 }}}
