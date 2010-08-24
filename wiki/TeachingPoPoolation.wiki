@@ -43,6 +43,31 @@ Note: do not provide the character "/" in the end of the path!
 
 == Normal quick guide ==
 
-enter the command line and change directory to the folder 'data' which contains the necessary data for this  quick guide
+enter the command line and change directory to the folder 'data' mentioned above.
 
+=== Trim reads ===
+
+As a first step trim the reads by quality as shown here
+
+{{{
+perl <local-popoolation-installation>/basic-pipeline/trim-fastq.pl --input1 read_1.fastq --input2 read_2.fastq --output trim --quality-threshold 20 --min-length 50
+}}}
  
+=== Prepare the reference genome ===
+The reference genome needs to be prepared:
+
+{{{
+mkdir wg
+mv dmel-2R-chromosome-r5.22.fasta wg
+awk '{print $1}' wg/dmel-2R-chromosome-r5.22.fasta > wg/dmel-2R-short.fa
+bwa index wg/dmel-2R-short.fa
+}}}
+
+=== Map the trimmed reads to the reference genome ===
+{{{
+bwa aln wg/dmel-2R-short.fa trim_1 > trim_1.sai
+bwa aln wg/dmel-2R-short.fa trim_2 > trim_2.sai
+bwa sampe wg/dmel-2R-short.fa trim_1.sai trim_2.sai trim_1 trim_2 > maped.sam
+}}}
+
+*NOTE*: As this guide is intented to be as fast as possible this are definitely not the optimal parameters for mapping of the reads; Instead the following parameters would be prefererable : bwa aln -l 100 -o 2 -d 12 -e 12 -n 0.01 wg/dmel-2R-short.fa trim_1 > trim_1.sai
