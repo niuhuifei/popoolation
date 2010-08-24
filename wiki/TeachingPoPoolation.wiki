@@ -131,3 +131,23 @@ view the output
 {{{
 less sorted-genewise.pi
 }}}
+
+= Display the results in the IGV =
+
+  * Open the IGV
+
+== Import a genome ==
+
+  * Press Import Genome...
+  * Enter Name: Dmel-2R
+  * Enter sequence file: dmel-2R-chromosome-r5.22.fasta 
+  * Press Save
+
+== Load the data ==
+
+  * Press File, Load from File..
+  * select the file: maped.sort.bam
+  * Similarly load the file: cyp6g1.gtf
+  * Finally load: cyp6g1.pi.wig
+
+== View the results ==
