@@ -151,3 +151,9 @@ less sorted-genewise.pi
   * Finally load: cyp6g1.pi.wig
 
 == View the results ==
+
+  * Zoom in on the whole region: 2R:7800000-8300000
+  * Zoom in on Cyp6g1: CG8453
+
+= Compare with our results =
+Download the following archive and compare your results with these screenshots: 
