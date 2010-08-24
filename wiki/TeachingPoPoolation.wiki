@@ -1,0 +1,23 @@
+#summary A quick guide demonstrating the functionality of PoPoolation using a small sample data set
+
+= Data =
+
+Download the small sample data set: http://popoolation.googlecode.com/files/teaching-data.zip
+
+= Software =
+
+Install the following tools:
+  * IGV: 
+  * bwa:
+  * samtools: 
+  * Perl:
+  * R
+  * PoPoolation: 
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
