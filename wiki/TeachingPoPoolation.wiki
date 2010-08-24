@@ -7,17 +7,12 @@ Download the small sample data set: http://popoolation.googlecode.com/files/teac
 = Software =
 
 Install the following tools:
-  * IGV: 
-  * bwa:
-  * samtools: 
-  * Perl:
-  * R
-  * PoPoolation: 
+  * IGV: http://www.broadinstitute.org/igv/
+  * bwa: http://bio-bwa.sourceforge.net/bwa.shtml
+  * samtools: http://samtools.sourceforge.net/
+  * Perl: http://www.perl.org/
+  * R: http://www.r-project.org/
+  * PoPoolation: http://code.google.com/p/popoolation/
 
 
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+= Quick Tour =
