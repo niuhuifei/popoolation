@@ -163,7 +163,9 @@ Download the following archive and compare your results with these screenshots: 
 The Cyp6g1 gene is sweeped in D.melanogaster as it confers resistance to DDT. Tajima's Pi should be very low around Cyp6g1. However there is a small peak of Tajima's Pi directly in the Cyp6g1 gene. 
 The Cyp6g1 gene has also been duplicated in natural populations of D.melanogaster, thus the peak of Tajiama's Pi is not caused by real SNPs in the population rather copy number variation and copy variable sites (CVS) are responsible for this 'artificial' peak. It may thus be necessary to adjust the maximum coverage to a more conservative value of for example '50'.
  
+
 *In summary this example shows that both the minimum and the maximum coverage needs to be choosen carefully*
 
 Enjoy using PoPoolation,
+
 yours Robert
