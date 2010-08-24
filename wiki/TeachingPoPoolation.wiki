@@ -29,7 +29,7 @@ Install the following tools:
 
 = Quick Tour =
 
-== Lazy man's Quick Guide ==
+== Lazy Man's Quick Guide ==
 
 copy the following shell script into the unzipped folder 'data' containing the data of the quick guide:
 
