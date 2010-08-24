@@ -2,6 +2,12 @@
 
 <wiki:toc max_depth="3" />
 
+= Introduction =
+
+This is a Quick Guide intented to demonstrate the functionality of PoPoolation while requiring as little 'user-time' as possible! 
+
+We provide a very small prefiltered sample data set. If time is not an issue for you and you want a more thorough introduction using unfiltered data we recommend to use the more extensive Walkthrough instead: http://code.google.com/p/popoolation/wiki/PoPOOLationWalkthrough 
+
 = Data =
 
 Download the small sample data set: http://popoolation.googlecode.com/files/teaching-data.zip
