@@ -28,8 +28,15 @@ http://popoolation.googlecode.com/files/popool-teaching.sh
 enter the folder in the command line and type:
 
 {{{
-sh popool-teaching.sh ~/<your-path-to-popoolation>
+sh popool-teaching.sh <your-path-to-popoolation>
 }}}
+
+eg:
+{{{
+sh popool-teaching.sh ~/dev/popoolation
+}}}
+
+Note: do not provide the character "/" in the end of the path!
 
   * Check out the resulting files (like the sorted-genewise.pi or the cyp6g1.pdf)
   * Continue with loading the data into the IGV
