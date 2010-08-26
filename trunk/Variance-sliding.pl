@@ -65,8 +65,8 @@ pod2usage(-msg=>"The minimum coverage hast to be at least two times the minimum 
 pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
 
 # qualencoding,mincount,mincov,maxcov,minqual
-my $pp=get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
-my $pileslider=PileupSlider->new($pileupfile,$windowSize,$stepSize,$pp);
+my $pp          = get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
+my $pileslider  = PileupSlider->new($pileupfile,$windowSize,$stepSize,$pp);
 
 # if the user provided a region a modified version of the pileupslider is used: the pileupregionslider: Decorator Pattern
 if($region)
@@ -444,6 +444,8 @@ exit;
         is($win->{count_snp},1,"PileupSlider; SNP count is ok");
         is($win->{start},1,"PileupSlider; start position is ok");
         is($win->{end},4,"PileupSlider; end position is ok");
+        is($win->{middle},3,"PileupSlider; end position is ok");
+        
         is($win->{data}[1]{G},4,"PileupSlider; allele count is ok");
         is($win->{data}[1]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[2]{C},2,"PileupSlider; allele count is ok");

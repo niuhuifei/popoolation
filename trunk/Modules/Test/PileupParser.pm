@@ -169,6 +169,16 @@
         is($res->{C},2,"parsePileup; C count is ok");
         is($res->{G},2,"parsePileup; G count is ok");
         is($res->{del},2,"parsePileup; del count is ok");
+        
+        # is covered
+        $pp=get_pileup_parser("illumina",2,4,1000000,0);
+        $res=$pp->("2L\t90140\tN\t9\tCcCT\taaaa");
+        is($res->{iscov},0,"parsePileup; is covered ok");
+        $res=$pp->("2L\t90140\tN\t9\tCcCTt\taaaaa");
+        is($res->{iscov},1,"parsePileup; is covered ok");
+        $pp=get_pileup_parser("illumina",1,4,1000000,0);
+        $res=$pp->("2L\t90140\tN\t9\tCcCT\taaaa");
+        is($res->{iscov},1,"parsePileup; is covered ok");
     }
     
     sub test_parseExtendedPileup()
