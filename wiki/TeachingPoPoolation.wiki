@@ -6,7 +6,7 @@
 
 This is a Quick Guide intented to demonstrate the functionality of PoPoolation while requiring as little 'user-time' as possible! 
 
-We provide a very small prefiltered sample data set. If time is not an issue for you and you want a more thorough introduction using unfiltered data we recommend to use the more extensive Walkthrough instead: http://code.google.com/p/popoolation/wiki/PoPOOLationWalkthrough 
+We provide a very small prefiltered sample data set. If time is not an issue and you prefer a more thorough introduction using unfiltered data we recommend to use the extensive Walkthrough instead: http://code.google.com/p/popoolation/wiki/PoPOOLationWalkthrough 
 
 However the sample data set is the area flanking the Cyp6g1 gene in Drosophila melanogaster. Cyp6g1 has recently sweeped in D.mel as it confers resistance to DDT. This is a very complex genomic area where several transposons have been inserted (Accord, P-elements etc) and several copy number variations have been described.
 
