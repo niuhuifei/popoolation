@@ -200,6 +200,7 @@ sub get_extended_parser
                     $pu->{consc}="N";
                     $pu->{consc_confidence}=0;
         }
+        die "invalid number of allles for entry $line" unless scalar(@{$pu->{alleles}})==4;
         return $pu;
     }
 }

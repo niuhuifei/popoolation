@@ -21,13 +21,14 @@ my $step=100;
 my $minCoverageFraction=0.6;
 
 
-my $usage="perl $0 --input mauve-parsing-putput.txt --output dxy-output.txt --window-size 1000 --step-size 100\n";
+my $usage="perl $0 --input mauve-parsing-putput.txt --output dxy-output.txt --window-size 1000 --step-size 100 --min-covered-fraction 0.6\n";
 
 GetOptions(
     "input=s"	    =>\$input,
     "output=s"	    =>\$output,
     "window-size=i"  =>\$windowsize,
     "step-size=i"   =>\$step,
+    "min-covered-fraction=f"=>\$minCoverageFraction,
     "test"          =>\$test,
     "help"	    =>\$help
 ) or pod2usage(-msg=>"Wrong options",-verbose=>1);
@@ -97,7 +98,13 @@ while(my $window=$reader->nextWindow())
 			}
 		    }
 		}
-		print $ofh "$chr\t$pos\tna\tna\tna\t$considered_pos\n";
+		my $coveredFrac="0.00";
+		if ($considered_pos>0) {
+		    $coveredFrac=$considered_pos/$win;
+		    $coveredFrac = sprintf "%.2f",$coveredFrac;
+		}
+		
+		print $ofh "$chr\t$pos\tna\tna\tna\t$coveredFrac\n";
 		#print "$chr\t$pos\tna\tna\tna\t$considered_pos\n";
         }
  
@@ -320,13 +327,19 @@ exit;
         
 	
 	my $string = "";
-	my $coveredFrac=$considered_pos/$win;
+
+	my $coveredFrac="0.00";
+	if ($considered_pos>0) {
+	    $coveredFrac=$considered_pos/$win;
+	    $coveredFrac = sprintf "%.2f",$coveredFrac;
+	}
+		
 	if ($coveredFrac>=$minCovFraction) {
 		
-		$string = "$chr\t$pos\t$Dxy12\t$Dxy13\t$Dxy23\t$considered_pos";
+		$string = "$chr\t$pos\t$Dxy12\t$Dxy13\t$Dxy23\t$coveredFrac";
 	}
 	else {
-		$string = "$chr\t$pos\tna\tna\tna\t$considered_pos";
+		$string = "$chr\t$pos\tna\tna\tna\t$coveredFrac";
 	}
         #print $ofh "$chr\t$middle\t$Dxy12\t$Dxy13\t$Dxy23\n";
         
@@ -633,6 +646,10 @@ the size of the sliding window; default=1000
 =item B<--step-size>
 
 the size of the sliding window steps; default=100
+
+=item B<--min-covered-fraction>
+
+the minimum fraction of a window being between min-coverage and max-coverage in ALL populations; float; default=0.6
 
 =item B<--test>
 

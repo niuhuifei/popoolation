@@ -9,26 +9,19 @@ use Getopt::Long;
 use Pod::Usage;
 
 
-
-
-
 my $input;
 my $output;
 my $help=0;
-my $trackname="unknown";
 my $windowsize;
-my $ucscfilter="";
-my $ucscprepend="";
+my $filter="";
 
 
 
 GetOptions(
             "input=s"		=>\$input,
-            "ucsc-filter=s"     =>\$ucscfilter,
-            "ucsc-prepend=s"    =>\$ucscprepend,
+            "filter=s"          =>\$filter,
             "output=s"		=>\$output,
             "window-size=i"      =>\$windowsize,
-            "trackname=s"       =>\$trackname,
             "help"              =>\$help
         );
 
@@ -37,24 +30,38 @@ pod2usage(-verbose=>2) if $help;
 pod2usage(-verbose=>1,-message=>"No input file specified") unless -e $input;
 pod2usage(-verbose=>1, -message=>"No output file specified") unless $output;
 
-unless ($output=~m/\.wig/)
-{
-    $output.=".wig";
-}
 
 $windowsize=Utility::infer_window_size($input) unless $windowsize;
 #calculate the offset; wiggle is 1-based
 my $offset=int($windowsize/2)-1;
 
-my $ucfilt;
-$ucfilt= {map{ $_,1} split /\s/,$ucscfilter} if $ucscfilter;
+my $filt;
+$filt= {map{ $_,1} split /\s/,$filter} if $filter;
 
 open my $ifh,"<", $input or die "Could not open input file";
 open my $ofh,">",$output or die "Could not open output file";
 
 
+
+
 #print track
-print $ofh "track type=wiggle_0 name=\"$trackname\" visibility=full\n";
+print $ofh <<PERLSUCKS;
+[general]
+glyph = xyplot
+graph_type=boxes
+fgcolor = black
+bgcolor = red
+height=200
+min_score=na
+
+max_score=na
+
+label=1
+scale=left
+key=var
+PERLSUCKS
+
+
 
 my $activechr="";
 my $chrHash={};
@@ -63,22 +70,31 @@ while(my $l=<$ifh>)
     chomp $l;
     my($chr,$pos,undef,undef,$measure)=split /\t/,$l;
     
-    if($ucfilt)
+    if($filt)
     {
-        next unless exists($ucfilt->{$chr});
+        next unless exists($filt->{$chr});
     }
     if($chr ne $activechr)
     {
-        my $printchr=$ucscprepend.$chr;
-        print $ofh "variableStep chrom=$printchr span=$windowsize\n";
+
+        print $ofh "reference=$chr\n";
         die "Chromosome $chr occured several times; Please make sure the file is properly sorted" if exists($chrHash->{$chr});
         $chrHash->{$chr}=1;
         $activechr=$chr;
     }
     
     next if $measure eq "na";
-    $pos-=$offset;
-    print $ofh "$pos\t$measure\n";   
+    my $start=$pos-$offset;
+    my $end=$pos+int($windowsize/2);
+#2L	pi	5202..5301	score=0.004862034
+#2L	pi	5302..5401	score=0.004521015
+#2L	pi	5402..5501	score=0.005496933
+#2L	pi	5502..5601	score=0.004151401
+#2L	pi	5602..5701	score=0.003701141
+#2L	pi	5702..5801	score=0.003530197
+#2L	pi	5802..5901	score=0.003165151
+#2L	pi	5902..6001	score=0.002726609
+    print $ofh "$chr\tvar\t$start..$end\tscore=$measure\n";   
 }
 
 
@@ -125,7 +141,7 @@ exit;
 
 =head1 NAME
 
-VarSliding2Wiggle.pl - Converts the output of the Variance-slider.pl into a wiggle file
+VarSliding2Flybase.pl - Converts the output of the Variance-slider.pl into a Flybase compatible file
 
 =head1 SYNOPSIS
 
@@ -135,31 +151,16 @@ VarSliding2Wiggle.pl - Converts the output of the Variance-slider.pl into a wigg
 
 =item B<--input>
 
-
 The input file; Mandatory parameter
-
 
 =item B<--output>
 
 The output file. Mandatory parameter
 
-=item B<--trackname>
-
-The name of the track. This information may for example be displayed in the IGV. default=unknown
 
 =item B<--window-size>
 
 The window size; Per default the script will attempt to infer the correct window-size; If this fails the user may provide the correct one; default=""
-
-=item B<--ucsc-filter>
-
-The UCSC genome browser only accepts certain chromosome ids. Any attempts loading a wiggle file containing not recognised chromosome ids will result in an error; this option allows to filter for certain user provided
-chromosome ids; for example C<--ucsc-filter "2L 2R 3L 3R 4 X"; default=""
-
-=item B<--ucsc-prepend>
-
-For the UCSC genome browser, chromsomes IDs have to be formated according to the requirements of ucsc. For example chr2L has to be provided instead of 2L for D.mel.
-This option allows to prepend the specified string to every chromosome id; This step is applied after the filtering using C<--ucsc-filter>; default=""
 
 =item B<--help>
 
@@ -179,34 +180,31 @@ Input will be the output of the variance slider. For example
 
 =head2 Output
 
-A wiggle file which can be used with the Integrated Genomics Viewer (IGV).
-If the names of the chromomosomes are correct this file can also be used directly with the UCSC Genome browser;
-For more information see the section reformating for UCSC.
+A Flybase formated output file:
 
- track type=wiggle_0 name="unknown" visibility=full
- variableStep chrom=2L span=1000
- 5001    -0.003390146
- 6001    -0.001091447
- 7001    0.000033510
- 8001    -0.001735518
- 9001    -0.001217919
+ [general]
+ glyph = xyplot
+ graph_type=boxes
+ fgcolor = black
+ bgcolor = red
+ height=200
+ min_score=na 
 
-=head2 Reformating for UCSC
+ max_score=na
 
-The UCSC genome browser has very strict requirements for the chromosome ids.
-For example UCSC requires for D. melanogaster "chom2L" instead of "2L";
-Furthermore chromosomes which are unknown to UCSC will result in an error.
-This may for example happen if Wolbachia is present in the D. melanogaster reference sequence.
+ label=1
+ scale=left
+ key=pi
 
-For this reasons it is necessary to:
-
-a.) filter for known contigs (use C<--ucsc-filter>)
-
-b.) convert the chromosome id's into the format required by ucsc (use C<--ucsc-prepend>)
-
-
-
-
+ reference=2L
+ 2L	pi	4902..5001	score=0.006027673
+ 2L	pi	5002..5101	score=0.005171469
+ 2L	pi	5102..5201	score=0.004855847
+ 2L	pi	5202..5301	score=0.004862034
+ 2L	pi	5302..5401	score=0.004521015
+ 2L	pi	5402..5501	score=0.005496933
+ 2L	pi	5502..5601	score=0.004151401
+ 2L	pi	5602..5701	score=0.003701141
 
 =cut
 
