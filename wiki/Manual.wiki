@@ -59,6 +59,9 @@ Converts the output of Variance-sliding.pl into a pdf. Thus a overview of the ge
 == !VarSliding2Wiggle.pl ==
 Converts the output of Variance-sliding.pl into a wiggle file (http://genome.ucsc.edu/goldenPath/help/wiggle.html). Wiggle files are for example accepted by the Integrative Genomics Viewer (http://www.broadinstitute.org/igv/) or by the UCSC Genome Browser (http://genome.ucsc.edu/).
 
+== !VarSliding2Flybase.pl ==
+Converts the output of Variance-sliding.pl into a format which is compatible with the FlyBase Genome browser.
+
 == mauve-parser.pl ==
 Parses the output of the Mauve Genome Alignment Software (http://asap.ahabs.wisc.edu/mauve/).
 To determine the ancestral allele it is necessary to align three species where one acts as an outgroup, this may be accomplised with Mauve. This script converts a Mauve multiple genome alignment into a single tab delimited table where one genome (the first) acts as the reference. 
