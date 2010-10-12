@@ -52,9 +52,9 @@ graph_type=boxes
 fgcolor = black
 bgcolor = red
 height=200
-min_score=na
+min_score=0
 
-max_score=na
+max_score=0.1
 
 label=1
 scale=left
