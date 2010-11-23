@@ -12,7 +12,7 @@
 
 = With which data can I use !PoPoolation =
 
-The software is designed for next generation sequencing data of pooled genomic DNA. Furthermore at least a partial assembly of the used species should be available.
+The software is designed for next generation sequencing data of pooled genomic DNA. Moreover at least a partial assembly of the used species should be available.
 
 We do not recommend using the software with cDNA or unigenes as these sequences do not contain introns which will negatively affect the mapability of genomic reads. Furthermore we do not recommend to use the software on pooled RNA samples as RNA is subject to many modifications which will distort the population genetic measures, like differential gene expression, RNA editing, alternative splicing, allele specific gene expression.
 
