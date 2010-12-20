@@ -25,6 +25,7 @@ my $test=0;
 my $minCoverage=4;
 my $maxCoverage=1000000;
 my $makeNoise=100000;
+my $tolerateDeletions=0;
 
 my $minCoveredFraction=0.6;
 
@@ -47,6 +48,7 @@ GetOptions(
     "min-coverage=i"    =>\$minCoverage,
     "max-coverage=i"    =>\$maxCoverage,
     "min-covered-fraction=f"=>\$minCoveredFraction,
+    "no-discard-deletions"=>\$tolerateDeletions,
     "test"              =>\$test,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -67,7 +69,7 @@ pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
 my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
 
 # qualencoding,mincount,mincov,maxcov,minqual
-my $pp=get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
+my $pp=get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual,$tolerateDeletions);
 
 my ($chrdec,$genehash)=Utility::read_gtf($gtffile);
 
@@ -514,6 +516,10 @@ the minimum fraction of a window being between min-coverage and max-coverage in 
 =item B<--min-qual>
 
 The minimum quality; Alleles with a quality lower than this threshold will not be considered (for SNP identification and coverage estimation); default=20
+
+=item B<--no-discard-deletions>
+
+per default sites with already a single deletion are discarded. By setting this flag sites with deletions will be used
 
 =item B<--test>
 

@@ -140,7 +140,7 @@
         
         
         # deletions:
-        $pp=get_pileup_parser("illumina",2,2,1000000,0);
+        $pp=get_pileup_parser("illumina",2,2,1000000,0,0);
         $res=$pp->("2L\t90140\tN\t9\tCcGg**\taaaaaa");
         is($res->{chr},"2L","parsePileup; chromosome is ok");
         is($res->{pos},90140,"parsePileup; position is ok");
@@ -179,6 +179,23 @@
         $pp=get_pileup_parser("illumina",1,4,1000000,0);
         $res=$pp->("2L\t90140\tN\t9\tCcCT\taaaa");
         is($res->{iscov},1,"parsePileup; is covered ok");
+        
+        # option tolerate deletions
+        $pp=get_pileup_parser("illumina",2,2,1000000,0,1);
+        $res=$pp->("2L\t90140\tN\t9\tCcGg**Nn\taaaaaaaa");
+        is($res->{chr},"2L","parsePileup; chromosome is ok");
+        is($res->{pos},90140,"parsePileup; position is ok");
+        is($res->{eucov},4,"parsePileup; coverage is ok");
+        is($res->{totcov},8,"parsePileup; coverage is ok");
+        is($res->{iscov},1,"parsePileup; is covered ok");
+        is($res->{issnp},1,"parsePileup; is snp ok");
+        is($res->{ispuresnp},1,"parsePileup; is pure snp ok");
+        is($res->{A},0,"parsePileup; A count is ok");
+        is($res->{T},0,"parsePileup; T count is ok");
+        is($res->{N},2,"parsePileup; N count is ok");
+        is($res->{C},2,"parsePileup; C count is ok");
+        is($res->{G},2,"parsePileup; G count is ok");
+        is($res->{del},2,"parsePileup; del count is ok");
     }
     
     sub test_parseExtendedPileup()
