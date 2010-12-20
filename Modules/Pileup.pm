@@ -133,6 +133,9 @@ sub get_pileup_parser
     my $mincoverage=shift;
     my $maxcoverage=shift;
     my $minqual=shift;
+    my $tolerateDeletions=shift || 0;
+    
+    
     my $pp=get_basic_parser($quality_encoding,$minqual);
     
     return sub {
@@ -160,7 +163,12 @@ sub get_pileup_parser
             $pu->{issnp}=1 if $alcount>=2;
             
             # pure snps
-            $pu->{ispuresnp}= ($pu->{issnp} and $pu->{del}<1)?1:0;
+            $pu->{ispuresnp}=0;
+            if($pu->{issnp} and ($pu->{del} < 1 or $tolerateDeletions))
+            {
+                $pu->{ispuresnp}=1;
+            }
+            
         }
         return $pu;
     };
@@ -175,9 +183,10 @@ sub get_extended_parser
     my $mincoverage=shift;
     my $maxcoverage=shift;
     my $minqual=shift;
+    my $tolerateDeletions=shift || 0;
     
     # qualencoding,mincount,mincov,maxcov,minqual
-    my $pp=get_pileup_parser($quality_encoding,$mincount,$mincoverage,$maxcoverage,$minqual);
+    my $pp=get_pileup_parser($quality_encoding,$mincount,$mincoverage,$maxcoverage,$minqual,$tolerateDeletions);
     
     return sub
     {

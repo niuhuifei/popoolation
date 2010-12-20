@@ -25,6 +25,7 @@ my $minCoverage=4;
 my $maxCoverage=1000000;
 my $minCoveredFraction=0.6;
 my $region="";
+my $tolerateDeletions=0;
 
 
 # --measure pi --help --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi --snp-output /Users/robertkofler/dev/testfiles/output/test.snps
@@ -49,6 +50,7 @@ GetOptions(
     "max-coverage=i"    =>\$maxCoverage,
     "min-covered-fraction=f"=>\$minCoveredFraction,
     "region=s"          =>\$region,
+    "no-discard-deletions" =>\$tolerateDeletions,
     "test"              =>\$test,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -65,7 +67,7 @@ pod2usage(-msg=>"The minimum coverage hast to be at least two times the minimum 
 pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
 
 # qualencoding,mincount,mincov,maxcov,minqual
-my $pp          = get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
+my $pp          = get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual,$tolerateDeletions);
 my $pileslider  = PileupSlider->new($pileupfile,$windowSize,$stepSize,$pp);
 
 # if the user provided a region a modified version of the pileupslider is used: the pileupregionslider: Decorator Pattern
@@ -625,6 +627,10 @@ The size of the sliding window. default=50000
 =item B<--step-size>
 
 the size of one sliding window step. If this number is equal to the --window-size the sliding window will be non overlapping (jumping window). default=10000
+
+=item B<--no-discard-deletions>
+
+per default sites with already a single deletion are discarded. By setting this flag, sites with deletions will be used.
 
 =item B<--test>
 

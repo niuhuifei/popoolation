@@ -10,15 +10,21 @@ my $outfile="";
 my $tempr="/tmp/rinput.r";
 my $lab="measure";
 my $scale_equal=0;
+my $outps=0;
+my $ymin=undef;
+my $ymax=undef;
 my $help=0;
 
 GetOptions(
-    "input=s"=>\$infile,
-    "output=s"=>\$outfile,
-    "chromosomes=s"=>\$tc,
-    "ylab=s"=>\$lab,
-    "scale-equal"=>\$scale_equal,
-    "help"=>\$help
+    "input=s"       =>\$infile,
+    "output=s"      =>\$outfile,
+    "chromosomes=s" =>\$tc,
+    "ylab=s"        =>\$lab,
+    "ymin=f"        =>\$ymin,
+    "ymax=f"        =>\$ymax,
+    "scale-equal"   =>\$scale_equal,
+    "ps"           =>\$outps,
+    "help"          =>\$help
 ) or die "do not recognise option $!";
 
 pod2usage(-verbose=>2) if $help;
@@ -28,7 +34,7 @@ pod2usage(-msg=>"Specify the chromosomes",-verbose=>1) unless $tc;
 
 my @chromosomes=split/\s/,$tc;
 
-_printRCode($tempr,$infile,$outfile,\@chromosomes,$scale_equal,$lab);
+_printRCode($tempr,$infile,$outfile,\@chromosomes,$scale_equal,$lab,$ymin,$ymax,$outps);
 
 
 system "R --vanilla <$tempr";
@@ -47,6 +53,9 @@ sub _printRCode
     my $tc=shift;
     my $scalequal=shift;
     my $ylab=shift;
+    my $ymin=shift;
+    my $ymax=shift;
+    my $outps=shift;
     
     my $c=@$tc;
     my $columnes=3;
@@ -61,11 +70,38 @@ scale=$scalequal
 t<-read.table("$input",sep="\t")
 t\$V5[t\$V5=="na"]=NA
 t\$V5=as.numeric(as.character(t\$V5))
-pdf("$output",width=15)
+PERLSUCKS
+if($outps)
+{
+    print $tfh "postscript(file=\"$output\",onefile=TRUE,horizontal=FALSE)\n";
+}
+else
+{
+    print $tfh "pdf(\"$output\",width=15)\n";
+}
+
+
+print $tfh <<PERLSUCKS;
 par(mfrow=c($rows,$columnes))
 chroms<-$chromosomes
-maxval<-max(t[,5],na.rm=TRUE)
-minval<-min(t[,5],na.rm=TRUE)
+PERLSUCKS
+if(defined($ymax))
+{
+    print $tfh "maxval=$ymax\n";
+}
+else
+{
+    print $tfh "maxval<-max(t[,5],na.rm=TRUE)\n";
+}
+if(defined($ymin))
+{
+    print $tfh "minval=$ymin\n";
+}
+else
+{
+    print $tfh "minval<-min(t[,5],na.rm=TRUE)\n";
+}
+print $tfh <<PERLSUCKS;
 maxval
 minval
 xmaxtotal=max(t[,2],na.rm=TRUE)
@@ -140,7 +176,15 @@ The output file. Will be pdf. Mandatory parameter
 =item B<--ylab>
 
 The y-label used for describing the axis in the graph
- 
+
+=item B<--ymin>
+
+the minimum value for the y-achsis; optional parameter
+
+=item B<--ymax>
+
+the maximum value for the y-achsis; optional parameter
+
 =item B<--chromosomes>
 
 A space separated list of chromosomes (contigs) for which the graphs should be created. Must be provided within double quotes; eg: "2L 2R X 3L 3R 4"; Mandatory parameter
@@ -148,6 +192,10 @@ A space separated list of chromosomes (contigs) for which the graphs should be c
 =item B<--scale-equal>
 
 Flag; Sets equal scalling of chromosomes. default=flag not set
+
+=item B<--ps>
+
+Flag; print a ps-file instead of a pdf
 
 =back
 
