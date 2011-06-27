@@ -33,6 +33,15 @@ MaskTest::run_Tests() if $test;
 pod2usage(-msg=>"Could not find sam file",-verbose=>1) unless -e $input;
 pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
 
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using input\t$input\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using mask-region\t$maskregion\n";
+print $pfh "Using test\t$test\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
+
 
 open my $ifh, "<",$input or die "Could not open sam file";
 

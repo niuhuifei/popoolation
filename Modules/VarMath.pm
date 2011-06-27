@@ -2,10 +2,12 @@ package VarMath;
 use strict;
 use warnings;
 
+use Math::BigRat; 
+
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT=qw(noverk get_theta_calculator get_pi_calculator get_D_calculator);
-our @EXPORT_OK = qw();
+our @EXPORT_OK = qw(get_thetadiv_buffer get_thetadiv_buffer_sqr);
 
 
 # get_aMnm_calculator( M, n, m ) (M..coverage, n..poolsize,  running var ~ coverage)
@@ -22,6 +24,8 @@ my $amnm_buffer;
 my $pidiv_buffer;
 my $thetadiv_buffer;
 my $ddiv_buffer;
+my $thetadiv_buffer_sqr;
+my $amnm_buffer_sqr;
 ##
 ## BUFFER's
 ##
@@ -92,6 +96,7 @@ sub get_pi_calculator
         
         my $M=$snp->{eucov};
         my $pi_snp=1;
+#        print $M, "\n";
         $pi_snp-=($snp->{A}/$M)**2;
         $pi_snp-=($snp->{T}/$M)**2;
         $pi_snp-=($snp->{C}/$M)**2;
@@ -230,6 +235,82 @@ sub get_aMnm_buffer
 }
 
 
+sub get_aMnm_buffer_sqr
+# Calculates square of sum = S(M,b,r,n)^2 and stores the calculated values into buffer $amnm_buffer_sqr
+# This value is used for theta^2 correction in HKA test -- in calculation of Var[S].
+
+# Sum is defined in the following way:
+#              M-b
+#              ---
+#              \                           
+# S(M,b,r,n) = /    (1/r)*choose{M,i}*(r/n)^i*(1-r/n)^{M-i} 
+#              ---
+#              i=b
+#
+{
+    $amnm_buffer_sqr={} unless $amnm_buffer_sqr;
+    
+    return sub
+    {
+        my $M=shift; # coverage -- eucov
+        my $b=shift; # min-count
+        my $r=shift; # summation index 1..n-1 in get_thetadiv_buffer_sqr
+        my $n=shift; # pool size
+        
+        # calculate the key
+        my $key="$M:$b:$r:$n";
+        return $amnm_buffer_sqr->{$key} if exists($amnm_buffer_sqr->{$key});
+        
+        my $sqr=0;
+        my $sumBinom=0;
+        my $mM = Math::BigRat->new($M);
+        foreach my $i ($b..$M-$b)
+        {
+        	$sumBinom+= noverk($M,$i) * ($r/$n)**($i) * (1-$r/$n)**($M-$i);
+        }
+        $sqr= ($sumBinom/$r)**2;
+        #store the value in the buffer and return it 
+        $amnm_buffer_sqr->{$key}=$sqr;
+        return $sqr;
+    } 
+}
+
+
+sub get_thetadiv_buffer_sqr
+# Calculates sum R(M,b,n) and stores the calculated values into buffer $thetadiv_buffer_sqr
+# This value is used for theta correction in HKA test -- in calculation of Var[S].
+#
+# Sum R is defined in the following way:
+#            n-1
+#            --- 
+#            \
+# R(M,b,n)=  /   S(M,b,r,n)^2
+#            ---
+#            r=1
+{
+    $thetadiv_buffer_sqr={} unless $thetadiv_buffer_sqr;
+    my $amnmcalc=get_aMnm_buffer_sqr();
+    
+    return sub
+    {
+      my $b=shift;
+      my $n=shift;
+      my $M=shift;
+      
+      my $key="$M:$b:$n";
+      return $thetadiv_buffer_sqr->{$key} if exists($thetadiv_buffer_sqr->{$key});
+     
+      my $sum=0;
+      my $n_sub_1 = $n - 1;
+      foreach my $r (1..$n-1)
+      {
+          $sum+=$amnmcalc->($M,$b,$r,$n);
+      }
+      
+      $thetadiv_buffer_sqr->{$key}=$sum;
+      return $sum;
+    };
+}
 
 
 sub noverk

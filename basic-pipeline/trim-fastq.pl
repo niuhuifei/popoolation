@@ -45,9 +45,24 @@ use Pileup;
     pod2usage(-msg=>"Quality must be larger than 0",-verbose=>1) if $qualThreshold<0;
     pod2usage(-msg=>"Length must be larger than 0",-verbose=>1) if $minLength<1 ;  # min length has to be 1 or larger
     pod2usage(-msg=>"At least one input file has to be provided", -verbose=>1) unless -e $input1;
-
-
     pod2usage(-msg=>"An output file has to be provided", -verbose=>1) unless $output;
+    
+    my $paramfile=$output.".params";
+    open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+    print $pfh "Using input1\t$input1\n";
+    print $pfh "Using input2\t$input2\n";
+    print $pfh "Using output\t$output\n";
+    print $pfh "Using quality-threshold\t$qualThreshold\n";
+    print $pfh "Using min-length\t$minLength\n";
+    print $pfh "Using fastq-type\t$fastqtype\n";
+    print $pfh "Using discard-internal-N\t$discardRemainingNs\n";
+    print $pfh "Using trim-quality (no-trim-quality)\t$trimQuality\n";
+    print $pfh "Using verbose (quit)\t$verbose\n";
+    print $pfh "Using test\t$test\n";
+    print $pfh "Using help\t$help\n";
+    close $pfh;
+    
+    
     my $encoder=get_quality_encoder($fastqtype);
     
     

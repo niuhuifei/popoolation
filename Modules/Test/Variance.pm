@@ -108,7 +108,10 @@
         # MAF
 
         $theta=$vc->(1,100,{eucov=>100,A=>4,T=>96,C=>0,G=>0});
-        ok(abs($theta-0.211977) < 0.00001,"Testing exact theta correction: Theta value correct");        
+        ok(abs($theta-0.211977) < 0.00001,"Testing exact theta correction: Theta value correct");  
+        
+        $theta=$vc->(1,100,{eucov=>100,A=>50,T=>50,C=>0,G=>0});
+        ok(abs($theta-0.211977) < 0.00001,"Testing exact theta correction: Theta value correct slight modified");        
         
         $theta=$vc->(3,100,{eucov=>100,A=>0,T=>96,C=>4,G=>0});
         ok(abs($theta-0.273512) < 0.00001,"Testing exact theta correction: Theta value correct");

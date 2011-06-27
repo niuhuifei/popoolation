@@ -66,6 +66,28 @@ pod2usage(-msg=>"Min quality not valid. Has to be between 0 and 40",-verbose=>1)
 pod2usage(-msg=>"The minimum coverage hast to be at least two times the minimum count",-verbose=>1) unless $minCoverage >= (2*$minCount);
 pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
 
+# Writing the .param file
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using input\t$pileupfile\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using snp-output\t$snpfile\n";
+print $pfh "Using fastq-type\t$fastqtype\n";
+print $pfh "Using measure\t$measure\n";
+print $pfh "Using window-size\t$windowSize\n";
+print $pfh "Using step-size\t$stepSize\n";
+print $pfh "Using min-count\t$minCount\n";
+print $pfh "Using min-qual\t$minQual\n";
+print $pfh "Using pool-size\t$poolSize\n";
+print $pfh "Using min-coverage\t$minCoverage\n";
+print $pfh "Using max-coverage\t$maxCoverage\n";
+print $pfh "Using min-covered-fraction\t$minCoveredFraction\n";
+print $pfh "Using region\t$region\n";
+print $pfh "Using no-discard-deletions\t$tolerateDeletions\n";
+print $pfh "Using help\t$help\n";
+print $pfh "Using test\t$test\n";
+close $pfh;
+
 # qualencoding,mincount,mincov,maxcov,minqual
 my $pp          = get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual,$tolerateDeletions);
 my $pileslider  = PileupSlider->new($pileupfile,$windowSize,$stepSize,$pp);

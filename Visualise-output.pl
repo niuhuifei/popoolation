@@ -32,6 +32,19 @@ pod2usage(-msg=>"Specify an input file",-verbose=>1) unless -e $infile;
 pod2usage(-msg=>"Specify an output file",-verbose=>1) unless $outfile;
 pod2usage(-msg=>"Specify the chromosomes",-verbose=>1) unless $tc;
 
+my $paramfile=$outfile.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using infile\t$infile\n";
+print $pfh "Using outfile\t$outfile\n";
+print $pfh "Using chromosomes\t$tc\n";
+print $pfh "Using ylab\t$lab\n";
+print $pfh "Using ymin\t$ymin\n";
+print $pfh "Using ymax\t$ymax\n";
+print $pfh "Using scale-equal\t$scale_equal\n";
+print $pfh "Using ps\t$outps\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
+
 my @chromosomes=split/\s/,$tc;
 
 _printRCode($tempr,$infile,$outfile,\@chromosomes,$scale_equal,$lab,$ymin,$ymax,$outps);

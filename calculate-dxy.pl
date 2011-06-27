@@ -41,6 +41,17 @@ Test::runTests() if $test;
 pod2usage(-msg=>"A input file has to be provided\n",-verbose=>1) unless -e $input;
 pod2usage(-msg=>"A output file has to be provided\n",-verbose=>1) unless $output;
 
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using input\t$input\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using window-size\t$windowsize\n";
+print $pfh "Using step-size\t$step\n";
+print $pfh "Using min-covered-fraction\t$minCoverageFraction\n";
+print $pfh "Using test\t$test\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
+
 
       
 

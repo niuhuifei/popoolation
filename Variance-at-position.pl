@@ -64,6 +64,26 @@ pod2usage(-msg=>"Min count not provided",-verbose=>1) unless $minCount;
 pod2usage(-msg=>"Min quality not valid. Has to be between 0 and 40",-verbose=>1) if $minQual<0 || $minQual > 40;
 pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
 
+
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using pileup\t$pileupfile\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using gtf\t$gtffile\n";
+print $pfh "Using measure\t$measure\n";
+print $pfh "Using snp-output\t$snpfile\n";
+print $pfh "Using fastq-type\t$fastqtype\n";
+print $pfh "Using min-count\t$minCount\n";
+print $pfh "Using min-qual\t$minQual\n";
+print $pfh "Using pool-size\t$poolSize\n";
+print $pfh "Using min-coverage\t$minCoverage\n";
+print $pfh "Using max-coverage\t$maxCoverage\n";
+print $pfh "Using min-covered-fraction\t$minCoveredFraction\n";
+print $pfh "Using no-discard-deletions\t$tolerateDeletions\n";
+print $pfh "Using test\t$test\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
+
 # get the method which should be used to calculate a feature;
 #my $measureCalculator=getMeasureCalculater($measure);
 my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);

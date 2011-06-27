@@ -10,6 +10,7 @@ our $verbose=1;
 my $input="";
 my $output="";
 my $indelwindow=5;
+my $mincount=1;
 my $help=0;
 my $test=0;
 
@@ -20,6 +21,7 @@ GetOptions(
     "input=s"           =>\$input,
     "indel-window=i"    =>\$indelwindow,
     "output=s"          =>\$output,
+    "min-count=i"       =>\$mincount,
     "test"              =>\$test,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -30,6 +32,16 @@ pod2usage(-msg=>"Could not find pileup file",-verbose=>1) unless -e $input;
 pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
 pod2usage(-msg=>"Indel window has to be larger or equal to one",-verbose=>1) unless $indelwindow>=1;
 
+
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using input\t$input\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using indel-window\t$indelwindow\n";
+print $pfh "Using min-count\t$mincount\n";
+print $pfh "Using test\t$test\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
 
 open my $ifh, "<",$input or die "Could not open pileup file";
 open my $ofh,">",$output or die "Could not open output file";
@@ -51,7 +63,8 @@ while(my $line=<$ifh>)
     
     next unless $nucs=~m/[-+]\d/;
     $count_indelpos++;
-    my $indelleng=Utility::parse_pileup($nucs);
+    my ($valid,$indelleng)=Utility::parse_pileup($nucs,$mincount);
+    next unless $valid;
     
     push @$indelposar,{
             chr=>$chr,
@@ -85,6 +98,8 @@ exit;
     sub parse_pileup
     {
         my $nucs=shift;
+        my $mincount=shift;
+
         
         my $tempindels=[];
         # deletions have a length in the reference: the numbe after the '-'
@@ -104,10 +119,24 @@ exit;
             push @$tempindels,0;
         }
         
-        $tempindels=[sort {$a<=>$b} @$tempindels];
+        my $tlh={}; # temporary length hash
+        foreach my $t (@$tempindels)
+        {
+            $tlh->{$t}++
+        }
         
-        my $maxleng=pop @$tempindels;
-        return $maxleng;
+        my $maxleng=0;
+        my $valid=0;
+        while(my($leng,$count)=each(%$tlh))
+        {
+            if($count>=$mincount)
+            {
+                $valid=1;
+                $maxleng=$leng if $leng> $maxleng;
+            }
+        }
+        
+        return ($valid, $maxleng);
     }
     
     sub format_gtf
@@ -186,22 +215,40 @@ exit;
     {
 
         my $best;
+        my $valid;
         # - .. deletion in the read (they have a size in the  reference genome)
         # + .. insertion in the read (no size)
-        $best=Utility::parse_pileup(".-1A.");
+        ($valid,$best)=Utility::parse_pileup(".-1A.",1);
         is($best,1,"test parse pileup; correct size");
+        is($valid,1,"test parse pileup; valid correct");
         
-        $best=Utility::parse_pileup(".-1A...+2AA..");
-        is($best,1,"test parse pileup; correct size");
+        ($valid,$best)=Utility::parse_pileup(".-1A...+2AA..",1);
+        is($best,1,"test parse pileup; correct size",1);
+        is($valid,1,"test parse pileup; valid correct");
         
-         $best=Utility::parse_pileup(".+1A...+2AA..");
+        ($valid,$best)=Utility::parse_pileup(".+1A...+2AA..",1);
         is($best,0,"test parse pileup; correct size");
+        is($valid,1,"test parse pileup; valid correct");
         
-        $best=Utility::parse_pileup(".-1A...-2AA..");
+        ($valid,$best)=Utility::parse_pileup(".-1A...-2AA..",1);
         is($best,2,"test parse pileup; correct size");
+        is($valid,1,"test parse pileup; valid correct");
         
-        $best=Utility::parse_pileup("..-3ACG.-1A...-2AA..");
+        ($valid,$best)=Utility::parse_pileup("..-3ACG.-1A...-2AA..",1);
         is($best,3,"test parse pileup; correct size");
+        is($valid,1,"test parse pileup; valid correct");
+        
+        ($valid,$best)=Utility::parse_pileup(".-1A...+2AA..",2);
+        is($best,0,"test parse pileup; correct size");
+        is($valid,0,"test parse pileup; valid correct");
+        
+        ($valid,$best)=Utility::parse_pileup(".+2AA...+2AA..",2);
+        is($best,0,"test parse pileup; correct size");
+        is($valid,1,"test parse pileup; valid correct");
+        
+        ($valid,$best)=Utility::parse_pileup(".-1A...-1A..",2);
+        is($best,1,"test parse pileup; correct size");
+        is($valid,1,"test parse pileup; valid correct");
     }
     
     sub test_get_region_calculator
@@ -289,6 +336,10 @@ The output file.  Mandatory.
 =item B<--indel-window>
 
 Length of the window around the indel; default=5
+
+=item B<--min-count>
+
+Minimum count for an indel; default=1
 
 =item B<--test>
 

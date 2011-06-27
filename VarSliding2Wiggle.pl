@@ -37,6 +37,17 @@ pod2usage(-verbose=>2) if $help;
 pod2usage(-verbose=>1,-message=>"No input file specified") unless -e $input;
 pod2usage(-verbose=>1, -message=>"No output file specified") unless $output;
 
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using input\t$input\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using ucsc-filter\t$ucscfilter\n";
+print $pfh "Using ucsc-prepend\t$ucscprepend\n";
+print $pfh "Using window-size\t$windowsize\n";
+print $pfh "Using trackname\t$trackname\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
+
 unless ($output=~m/\.wig/)
 {
     $output.=".wig";

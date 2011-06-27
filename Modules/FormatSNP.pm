@@ -8,7 +8,7 @@
     
     require Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT =qw(get_WindowSNPFormater get_gtfSNPFormater get_SNPwriter get_syn_nonsyn_SNPFormater);
+    our @EXPORT =qw(get_WindowSNPFormater get_gtfSNPFormater get_SNPwriter get_syn_nonsyn_SNPFormater get_synnonsyngene_SNPFormater);
     
     
             #pos=>$pos,
@@ -76,14 +76,13 @@
             my $window=$win->{window};
             my $data=$win->{data};
             my $snpcount=$win->{count_snp};
-                
+            
             my $snps=[];
             foreach(@$data)
             {
                 push @$snps,$_ if $_->{ispuresnp};
             }
-                
-
+            
             print $ofh ">$chr:$middle $chr:$start-$end snps:$snpcount\n";
             foreach my $snp (@$snps)
             {
@@ -100,6 +99,30 @@
         return "$snp->{chr}\t$snp->{pos}\t$snp->{refc}\t$snp->{eucov}\t$snp->{A}\t$snp->{T}\t$snp->{C}\t$snp->{G}\t$snp->{N}\n";
     }
     
+    sub get_synnonsyngene_SNPFormater
+    {
+        my $outfile=shift;
+        open my $ofh, ">", $outfile or die "Could not open output file $outfile";
+        
+        # the closure
+        return sub
+        {
+            my $tr=shift;
+            my $genelist=shift;
+            my $countcodons=$tr->{cc};
+            next unless @$countcodons;
+            
+            foreach my $cc (@$countcodons)
+            {
+                my $formated=_format_cc($cc);
+                foreach my $genename (@$genelist)
+                {
+                    print $ofh "$genename\t$formated\n";
+                }
+            }
+        }
+    }
+    
     
     sub get_syn_nonsyn_SNPFormater
     {
@@ -113,42 +136,47 @@
             my $start=shift;
             my $end=shift;
             
-            my @snptriplets =grep {$_->{count_snps}==1} @$triplets;
-            my $snpcount=@snptriplets;
-            return unless @snptriplets;
-            
+            my $snpcount=0;
+            foreach my $tr (@$triplets)
+            {
+                my $cc=$tr->{cc};
+                $snpcount+=@$cc;
+            }
+            return unless $snpcount;
             
             print $ofh ">$chr:$start-$end snps: $snpcount\n";
-            
-            foreach my $snp (@snptriplets)
+            foreach my $tr (@$triplets)
             {
-                my $af=$snp->{affected_snp};
-                my $codon_old=$snp->{codon};
-                my $codon_novel=$snp->{snp_codon};
-                my $strand=$snp->{strand};
-                my $aa_old=$snp->{aa_old};
-                my $aa_new=$snp->{aa_new};
-                my $syn=$snp->{syn};
-                $syn=$syn?"syn":"non-syn";
-                
-                my $codon="$codon_old->$codon_novel";
-                my $aa="$aa_old->$aa_new";
-                
-                my $toprint="$af->{chr}\t$af->{pos}\t$af->{refc}\t$af->{eucov}\t$af->{A}\t$af->{T}\t$af->{C}\t$af->{G}\t$af->{N}\t$syn\t$strand\t$codon\t$aa";
-                print $ofh $toprint."\n";
-                
+                my $codons=$tr->{cc};
+                foreach my $cc (@$codons)
+                {
+                    my $formated = _format_cc($cc);
+                    print $ofh $formated."\n";
+                }
             }
             print $ofh "\n";
-            
-            
-            # data, chr, lower, upper, window, count_codons, cound_valid_codons, 
-            
         }
     }
     
     
-
-
+    sub _format_cc
+    {
+        my $cc=shift;
+        my $codon_old=$cc->{codon};
+        my $codon_novel=$cc->{mcodon};
+        my $strand=$cc->{strand};
+        my $aa_old=$cc->{aa};
+        my $aa_new=$cc->{maa};
+        my $syn = $cc->{syn};
+        $syn=$syn?"syn":"non-syn";
+        
+        my $codon="$codon_old->$codon_novel";
+        my $aa="$aa_old->$aa_new"; 
+        
+        
+        my $toprint="$cc->{chr}\t$cc->{pos}\t$cc->{ref}\t$cc->{eucov}\t$cc->{A}\t$cc->{T}\t$cc->{C}\t$cc->{G}\t$syn\t$strand\t$codon\t$aa";
+        return $toprint;
+    }
 }
 
 1;

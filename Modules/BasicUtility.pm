@@ -8,7 +8,7 @@
     
     require Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT     =qw(reverse_complement_dna load_fasta get_fasta_reader get_fasta_writer);
+    our @EXPORT     =qw(reverse_complement_dna load_fasta get_fasta_reader get_fasta_writer get_fastq_reader get_fastq_writer);
     
     
     sub reverse_complement_dna
@@ -71,6 +71,43 @@
         }
         
     }
+    
+    sub get_fastq_reader
+    {
+        my $infile=shift;
+        open my $ifh, "<",$infile or die "Could not open fastq file";
+        return sub
+        {
+            my $h1=<$ifh>;
+            my $seq=<$ifh>;
+            my $h2=<$ifh>;
+            my $qual=<$ifh>;
+            return undef unless $h1;
+            chomp $h1; chomp $seq; chomp $h2; chomp $qual;
+            return
+            {
+                h1=>$h1,
+                seq=>$seq,
+                h2=>$h2,
+                qual=>$qual
+            };
+        }
+    }
+    sub get_fastq_writer
+    {
+        my $outfile=shift;
+        open my $ofh, ">",$outfile or die "Could not open output file";
+        return sub
+        {
+            my $e=shift;
+            print $ofh $e->{h1}."\n";
+            print $ofh $e->{seq}."\n";
+            print $ofh $e->{h2}."\n";
+            print $ofh $e->{qual}."\n";
+        }
+    }
+    
+    
     
     sub get_fasta_writer
     {
