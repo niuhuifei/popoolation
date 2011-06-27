@@ -17,6 +17,78 @@
         test_basicPileupParser();
         test_parsePileup();
         test_parseExtendedPileup();
+        test_basicmpileupparser();
+    }
+    
+    sub test_basicmpileupparser
+    {
+        my $pp;
+        my $res;
+        
+        $pp=get_basic_mpileupparser("illumina",20);
+        $res=$pp->("dralala\t2\tN\t5\tATCGATCGATCG\tZYXWVUTSRQPO\t10\tAAAA\tZZZZ\t");
+        is($res->{chr},"dralala","basic mpileup parser; refchromosome is OK");
+        is($res->{pos},2,"basic mpileup parser; position is OK");
+        is($res->{refc},"N","basic mpileup parser; reference character is OK");
+        is($res->{entries}[0]{A},2,"basic mpileup parser; A count is OK");
+        is($res->{entries}[0]{T},2,"basic mpileup parser; T count is OK");
+        is($res->{entries}[0]{C},2,"basic mpileup parser; C count is OK");
+        is($res->{entries}[0]{G},1,"basic mpileup parser; G count is OK");
+        is($res->{entries}[0]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[0]{del},0,"basic mpileup parser; del count is OK");
+        is($res->{entries}[1]{A},4,"basic mpileup parser; A count is OK");
+        is($res->{entries}[1]{T},0,"basic mpileup parser; T count is OK");
+        is($res->{entries}[1]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[1]{G},0,"basic mpileup parser; G count is OK");
+        is($res->{entries}[1]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[1]{del},0,"basic mpileup parser; del count is OK");
+
+        
+        $res=$pp->("chr2\t10\tT\t0\t*\t*\t10\tAAAA\tZZZZ\t0\t*\t*");
+        is($res->{chr},"chr2","basic mpileup parser; refchromosome is OK");
+        is($res->{pos},10,"basic mpileup parser; position is OK");
+        is($res->{refc},"T","basic mpileup parser; reference character is OK");
+        is($res->{entries}[0]{A},0,"basic mpileup parser; A count is OK");
+        is($res->{entries}[0]{T},0,"basic mpileup parser; T count is OK");
+        is($res->{entries}[0]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[0]{G},0,"basic mpileup parser; G count is OK");
+        is($res->{entries}[0]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[0]{del},0,"basic mpileup parser; del count is OK");
+        is($res->{entries}[1]{A},4,"basic mpileup parser; A count is OK");
+        is($res->{entries}[1]{T},0,"basic mpileup parser; T count is OK");
+        is($res->{entries}[1]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[1]{G},0,"basic mpileup parser; G count is OK");
+        is($res->{entries}[1]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[1]{del},0,"basic mpileup parser; del count is OK");
+        is($res->{entries}[2]{A},0,"basic mpileup parser; A count is OK");
+        is($res->{entries}[2]{T},0,"basic mpileup parser; T count is OK");
+        is($res->{entries}[2]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[2]{G},0,"basic mpileup parser; G count is OK");
+        is($res->{entries}[2]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[2]{del},0,"basic mpileup parser; del count is OK");
+        
+        $res=$pp->("chr2\t10\tT\t3\tTTTGG\tZZZZZ\t0\t*\t*\t4\tAAAAT\tZZZZZ");
+        is($res->{chr},"chr2","basic mpileup parser; refchromosome is OK");
+        is($res->{pos},10,"basic mpileup parser; position is OK");
+        is($res->{refc},"T","basic mpileup parser; reference character is OK");
+        is($res->{entries}[0]{A},0,"basic mpileup parser; A count is OK");
+        is($res->{entries}[0]{T},3,"basic mpileup parser; T count is OK");
+        is($res->{entries}[0]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[0]{G},2,"basic mpileup parser; G count is OK");
+        is($res->{entries}[0]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[0]{del},0,"basic mpileup parser; del count is OK");
+        is($res->{entries}[1]{A},0,"basic mpileup parser; A count is OK");
+        is($res->{entries}[1]{T},0,"basic mpileup parser; T count is OK");
+        is($res->{entries}[1]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[1]{G},0,"basic mpileup parser; G count is OK");
+        is($res->{entries}[1]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[1]{del},0,"basic mpileup parser; del count is OK");
+        is($res->{entries}[2]{A},4,"basic mpileup parser; A count is OK");
+        is($res->{entries}[2]{T},1,"basic mpileup parser; T count is OK");
+        is($res->{entries}[2]{C},0,"basic mpileup parser; C count is OK");
+        is($res->{entries}[2]{G},0,"basic mpileup parser; G count is OK");
+        is($res->{entries}[2]{N},0,"basic mpileup parser; N count is OK");
+        is($res->{entries}[2]{del},0,"basic mpileup parser; del count is OK");
     }
     
     sub test_basicPileupParser

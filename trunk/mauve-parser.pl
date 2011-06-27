@@ -30,6 +30,18 @@ pod2usage(-msg=>"Could not open reference file",-verbose=>1) unless -e $refinput
 pod2usage(-msg=>"Could not find input file",-verbose=>1) unless -e $input;
 pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
 
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using ref-input\t$refinput\n";
+print $pfh "Using input\t$input\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using sort (no-sort)\t$sort\n";
+print $pfh "Using crosscheck\t$crosscheck\n";
+print $pfh "Using help\t$help\n";
+print $pfh "Using test\t$test\n";
+close $pfh;
+
+
 my $ofstrans 		= Utility::get_offset_translator($refinput);
 my $mauveParser 	= Utility::get_mauve_parser($input,$ofstrans);
 

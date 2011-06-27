@@ -33,6 +33,17 @@ pod2usage(-msg=>"Could not find pileup file",-verbose=>1) unless -e $input;
 pod2usage(-msg=>"Could not find gtf file",-verbose=>1) unless -e $gtffile;
 pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
 
+
+my $paramfile=$output.".params";
+open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+print $pfh "Using input\t$input\n";
+print $pfh "Using output\t$output\n";
+print $pfh "Using gtf\t$gtffile\n";
+print $pfh "Using discardmode (keep-mode)\t$discardmode\n";
+print $pfh "Using test\t$test\n";
+print $pfh "Using help\t$help\n";
+close $pfh;
+
 my ($chrhash)=Utility::read_gtf($gtffile);
 
 open my $ifh, "<",$input or die "Could not open pileup file";
@@ -160,6 +171,10 @@ For more information use <--help>
 =item B<--output>
 
 The output file.  Mandatory.
+
+=item B<--keep-mode>
+
+Flag; Retain the positions provided in the gtf file instead of discarding them. Per default it is discarding the regions provided in the gtf file
 
 =item B<--help>
 
