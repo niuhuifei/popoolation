@@ -90,3 +90,10 @@ Identifies indel regions from a pileup file and outputs the coordinates into a g
 
 == basic-pipeline/filter-pileup-by-gtf.pl ==
 Allows to filter a pileup file by the regions specified in a gtf file. The specified regions may either be kept or discarded. For example the output of RepeatMasker may be used directly with this script to remove repetitive regions. Or as another example exons/CDS sequences may be removed before calculating Tajima's D. Or another examples whole regions surrounding indels may be removed (see basic-pipeline/identify-genomic-indel-regions.pl). The pileup file may subsequently be use with !PoPoolation
+
+== basic-pipeline/convert-fastq.pl ==
+Convert between the different quality encodings of a fastq file. For example convert a illumina encoded fastq file to a sanger encoded fastq file
+
+
+== basic-pipeline/subsample-pileup.pl ==
+May be used to create a uniform coverage in a pileup file. The bases of a pileup file may be randomly sampled to reduce the coverage to the given threshold. Two methods may be used for subsampling: either random drawing without replacement or a simple down scaling.
