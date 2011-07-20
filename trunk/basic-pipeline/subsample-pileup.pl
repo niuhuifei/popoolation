@@ -6,7 +6,6 @@ use Pod::Usage;
 use FindBin qw($RealBin);
 use lib "$RealBin/../Modules";
 use Pileup;
-use Math::Round;
 
 our $verbose=1;
 
@@ -18,7 +17,7 @@ my $minqual=0;
 my $maxcoverage=0;
 my $targetcoverage=0;
 my $encoding="illumina";
-my $mode="random"; #random/fraction
+my $method; #random/fraction
 
 #--gtf /Users/robertkofler/testfiles/3R-3entries.gtf --input /Users/robertkofler/testfiles/3R.pileup --output /Users/robertkofler/testfiles/output/3R-filtered.pileup
 
@@ -29,7 +28,7 @@ GetOptions(
     "min-qual=i"        =>\$minqual,
     "max-coverage=i"    =>\$maxcoverage,
     "target-coverage=i" =>\$targetcoverage,
-    "mode=s"            =>\$mode,
+    "method=s"          =>\$method,
     "fastq-type"        =>\$encoding,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -48,7 +47,7 @@ print $pfh "Using input\t$input\n";
 print $pfh "Using output\t$output\n";
 print $pfh "Using minimum quality\t$minqual\n";
 print $pfh "Using maximum coverage\t$maxcoverage\n";
-print $pfh "Using subsample modus\t$mode\n";
+print $pfh "Using subsample method\t$method\n";
 print $pfh "Using fastq-type\t$encoding\n";
 print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
@@ -56,7 +55,7 @@ close $pfh;
 
 my $pp=get_pileup_parser($encoding,1,1,$maxcoverage,$minqual);
 my $qualc=Utility::get_quality_char($encoding,$minqual);
-my $subs=Utility::get_subsampler($mode,$targetcoverage);
+my $subs=Utility::get_subsampler($method,$targetcoverage);
 
 
 open my $ifh,"<",$input or die "Could not open input file";
@@ -91,7 +90,6 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    use Math::Round;
     
     sub get_subsampler
     {
@@ -99,9 +97,13 @@ exit;
         my $targetcoverage=shift;
     
         my $freqcalculator;
-        if($mode eq "random")
+        if($mode eq "withreplace")
         {
-            $freqcalculator = \&_get_random_sample;
+            $freqcalculator = \&_freq_withreplacement;
+        }
+        elsif($mode eq "withoutreplace")
+        {
+            $freqcalculator = \&_freq_withoutreplacement
         }
         elsif($mode eq "fraction")
         {
@@ -117,22 +119,25 @@ exit;
         {
             my $p=shift;
 
-            my $samplecov=$p->{totcov}<$targetcoverage?$p->{totcov}:$targetcoverage;
+ 
             # calculate the new frequencies using the preset frequency calculator (random sampling method)
-            my $toret=$freqcalculator->($samplecov,$p->{A},$p->{T},$p->{C},$p->{G},$p->{del},$p->{N});
+            my $toret=$freqcalculator->($targetcoverage,$p->{A},$p->{T},$p->{C},$p->{G},$p->{del},$p->{N});
             return $toret;
         }
         
     }
     
-    sub _get_random_sample
+    sub _freq_withoutreplacement
     {
-        my($samplecov,$a,$t,$c,$g,$del,$n)=@_;
+        my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $temp="A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n;
+        my $cov=length($temp);
+        return $temp if $cov < $targetcoverage;
+        
         my @ar=split //,$temp;
         
         my @novel=();
-        for my $i (1..$samplecov)
+        for my $i (1..$targetcoverage)
         {
             my $leng=@ar;
             last unless $leng;
@@ -145,30 +150,97 @@ exit;
         return $toret;
     }
     
+    sub _freq_withreplacement
+    {
+        my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
+        my $cov=$a+$t+$c+$g+$del+$n;
+        return "A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n if $cov< $targetcoverage;
+        my($af,$tf,$cf,$gf,$delf,$nf)=($a/$cov,$t/$cov,$c/$cov,$g/$cov,$del/$cov,$n/$cov);
+        
+        
+            my $ab=$af;
+            my $tb=$af+$tf;
+            my $cb=$af+$tf+$cf;
+            my $gb=$af+$tf+$cf+$gf;
+            my $nb=$af+$tf+$cf+$gf+$nf;
+            my $db=1;
+            
+            my($an,$tn,$cn,$gn,$nn,$dn)=(0,0,0,0,0,0);
+            
+            for my $i (1..$targetcoverage)
+            {
+                my $r=rand();
+                if($r<$ab)
+                {
+                    $an++;
+                }
+                elsif($r<$tb)
+                {
+                    $tn++;
+                }
+                elsif($r<$cb)
+                {
+                    $cn++;
+                }
+                elsif($r<$gb)
+                {
+                    $gn++
+                }
+                elsif($r<$nb)
+                {
+                    $nn++
+                }
+                elsif($r<$db)
+                {
+                    $dn++
+                }
+                else
+                {
+                    die "not valid random number $r must be 0<= random < 1"
+                }
+                
+            }
+            return "A"x$an."T"x$tn."C"x$cn."G"x$gn."*"x$dn."N"x$nn;
+    }
+    
     
     sub _get_fraction_sample
     {
-        my($samplecov,$a,$t,$c,$g,$del,$n)=@_;
+        my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $cov=$a+$t+$c+$g+$del+$n;
+        return "A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n if $cov< $targetcoverage;
+        
         my($af,$tf,$cf,$gf,$delf,$nf)=($a/$cov,$t/$cov,$c/$cov,$g/$cov,$del/$cov,$n/$cov);
         
-        my $an=round($af*$samplecov);
-        my $tn=round($tf*$samplecov);
-        my $cn=round($cf*$samplecov);
-        my $gn=round($gf*$samplecov);
-        my $deln=round($delf*$samplecov);
-        my $nn=round($nf*$samplecov);
-        my $str="A"x$an."T"x$tn."C"x$cn."G"x$gn."*"x$deln."N"x$nn;
+        my $itercoverage=$targetcoverage;
+        my ($an,$tn,$cn,$gn,$deln,$nn)=(_intround($af*$itercoverage), _intround($tf*$itercoverage), _intround($cf*$itercoverage),
+                                             _intround($gf*$itercoverage), _intround($delf*$itercoverage), _intround($nf*$itercoverage));
+        my  $activecoverage=$an+$tn+$cn+$gn+$deln+$nn;
         
-        while(length($str)<$samplecov)
+        
+        # ingenious first increase the coverage, than try to decrease it, in case it is to small fill it up with N
+        while($activecoverage<$targetcoverage)
+        {
+            $itercoverage++;
+            ($an,$tn,$cn,$gn,$deln,$nn) = (_intround($af*$itercoverage), _intround($tf*$itercoverage), _intround($cf*$itercoverage),
+                                             _intround($gf*$itercoverage), _intround($delf*$itercoverage), _intround($nf*$itercoverage));
+            $activecoverage=$an+$tn+$cn+$gn+$deln+$nn;
+        }
+        while($activecoverage>$targetcoverage)
+        {
+            $itercoverage--;
+            ($an,$tn,$cn,$gn,$deln,$nn) = (_intround($af*$itercoverage), _intround($tf*$itercoverage), _intround($cf*$itercoverage),
+                                             _intround($gf*$itercoverage), _intround($delf*$itercoverage), _intround($nf*$itercoverage));
+            $activecoverage=$an+$tn+$cn+$gn+$deln+$nn;
+        }
+        my $str="A"x$an."T"x$tn."C"x$cn."G"x$gn."*"x$deln."N"x$nn;
+        die "New string is longer than targeted $str vs $targetcoverage; Use random sampling instead to obtain uniform coverages" if(length($str)>$targetcoverage);
+        while(length($str)<$targetcoverage)
         {
             $str.="N";
         }
-        while(length($str)>$samplecov)
-        {
-            my $index=int(rand() * length($str));
-            substr($str,$index,1,"");
-        }
+        
+        
         return $str; 
     }
 
@@ -180,8 +252,8 @@ exit;
         my $encoding=shift;
         my $minqual=shift;
         my $qualhash={
-            "illumina"=>    sub{chr(shift(@_)+64)},
-            "sanger"        =>sub{chr(shift(@_)+33)}
+            "illumina"      =>  sub{chr(shift(@_)+64)},
+            "sanger"        =>  sub{chr(shift(@_)+33)}
         };
         
         my $conv=$qualhash->{$encoding};
@@ -189,20 +261,24 @@ exit;
         return $conv->($minqual);
     }
     
+    sub _intround
+    {
+        
+        my $i=shift;            #2.5
+        my $integer=int($i);    #2
+        my $rest=$i-$integer;   #0.5
+        if($rest<0.5)
+        {
+            return $integer;    #2
+        }
+        else{
+            return $integer+1;  #3
+        }
+    }
+    
     
 }
 
-    
-
-
-    #"input=s"           =>\$input,
-    #"output=s"          =>\$output,
-    #"min-qual=i"        =>\$minqual,
-    #"max-coverage=i"    =>\$maxcoverage,
-    #"target-coverage=i" =>\$targetcoverage,
-    #"mode=s"            =>\$mode,
-    #"fastq-type"        =>\$encoding,
-    #"help"              =>\$help
 
 =head1 NAME
 
@@ -252,12 +328,13 @@ default=illumina
 
 The minimum quality; Bases in the pileup having a lower quality than this will be ignored.
 
-=item B<--mode>
+=item B<--method>
 
-Specify the method for reducing the coverage;
-Either random subsampling without replacement (random) may be used
-or the exact fraction of the allele frequency rounded to the next integer (fraciton);
-random|fraction; default=random
+Specify the method for subsampling of the synchronized file. Either: withreplace, withoutreplace, fraction; Mandatory
+ 
+ withreplace: subsample with replacement
+ withoutreplace: subsample without replacement
+ fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the targetcoverage with rounding to the next integer; 
 
 =item B<--help>
 
@@ -289,7 +366,7 @@ The output will be a coverage reduced pileup.
 =head2 Technical Details
 
 The script proceeds in the following ways. First the pileup is filtered for quality while only retaining having a quality higher or equal than the minimum quality.
-Second pileup position having a coverage higher than the maximum coverage are entirely discarded. In the third step the coverage is reduced to the targetcoverage either by random sampling without replacement or by calculating the exact fractions.
+Second pileup position having a coverage higher than the maximum coverage are entirely discarded. In the third step the coverage is reduced to the targetcoverage by one of the three supported methods
 Note that the base quality of the output will be the minimum-quality for all bases!
 
   
