@@ -29,7 +29,7 @@ GetOptions(
     "max-coverage=i"    =>\$maxcoverage,
     "target-coverage=i" =>\$targetcoverage,
     "method=s"          =>\$method,
-    "fastq-type"        =>\$encoding,
+    "fastq-type=s"      =>\$encoding,
     "help"              =>\$help
 ) or die "Invalid arguments";
 
@@ -39,6 +39,8 @@ pod2usage(-msg=>"Could not find pileup file",-verbose=>1) unless -e $input;
 pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
 pod2usage(-msg=>"Please provide a valid target coverage (>0)",-verbose=>1) unless $targetcoverage;
 pod2usage(-msg=>"Please provide a valid maximum coverage (>0)",-verbose=>1) unless $maxcoverage;
+pod2usage(-msg=>"Please provide a valid method",-verbose=>1) unless $method;
+
 
 
 my $paramfile=$output.".params";
@@ -53,7 +55,7 @@ print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
 
-my $pp=get_pileup_parser($encoding,1,1,$maxcoverage,$minqual);
+my $pp=get_pileup_parser($encoding,1,$targetcoverage,$maxcoverage,$minqual);
 my $qualc=Utility::get_quality_char($encoding,$minqual);
 my $subs=Utility::get_subsampler($method,$targetcoverage);
 
@@ -132,7 +134,7 @@ exit;
         my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $temp="A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n;
         my $cov=length($temp);
-        return $temp if $cov < $targetcoverage;
+        die "Coverage $cov smaller than targetcoverage $targetcoverage" if $cov < $targetcoverage;
         
         my @ar=split //,$temp;
         
@@ -154,7 +156,7 @@ exit;
     {
         my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $cov=$a+$t+$c+$g+$del+$n;
-        return "A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n if $cov< $targetcoverage;
+        die"Coverage $cov is smaller than the $targetcoverage\n"if $cov < $targetcoverage;
         my($af,$tf,$cf,$gf,$delf,$nf)=($a/$cov,$t/$cov,$c/$cov,$g/$cov,$del/$cov,$n/$cov);
         
         
@@ -208,7 +210,7 @@ exit;
     {
         my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $cov=$a+$t+$c+$g+$del+$n;
-        return "A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n if $cov< $targetcoverage;
+        die"Coverage $cov is smaller than the $targetcoverage\n"if $cov < $targetcoverage;
         
         my($af,$tf,$cf,$gf,$delf,$nf)=($a/$cov,$t/$cov,$c/$cov,$g/$cov,$del/$cov,$n/$cov);
         
@@ -304,7 +306,7 @@ The output file, will be a pileup file  Mandatory.
 
 =item B<--target-coverage>
 
-Reduce the coverage of the pileup-file to the here provided value; If the coverage is smaller than this the coverage will not be reduced; Mandatory
+Reduce the coverage of the pileup-file to the here provided value; Is also acting as minimum coverage, pileup entries having a smaller coverage than this will be discarded; Mandatory
 
 =item B<--max-coverage>
 
@@ -326,7 +328,7 @@ default=illumina
 
 =item B<--min-qual>
 
-The minimum quality; Bases in the pileup having a lower quality than this will be ignored.
+The minimum quality; Bases in the pileup having a lower quality than this will be ignored, for estimating the coverage and calling a SNP. default=0
 
 =item B<--method>
 
