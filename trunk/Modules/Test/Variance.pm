@@ -45,42 +45,69 @@
         my $d;
         
         # COVERAGE
-        # get_pi_calculator($b,$n,$snp)
+
         $vc=get_D_calculator(); #->new(100,2);
-        $d=$vc->(2,100,{eucov=>4,A=>2,T=>2,C=>0,G=>0});
+        $d=$vc->(2,100,{eucov=>4,A=>2,T=>2,C=>0,G=>0},0);
         ok(abs($d-0) < 0.00001,"Testing exact Tajima's D correction: D value correct");
         
-        $d=$vc->(2,100,{eucov=>10,A=>4,T=>6,C=>0,G=>0});
+        $d=$vc->(2,100,{eucov=>10,A=>4,T=>6,C=>0,G=>0},0.685832);
         ok(abs($d-0.935416) < 0.00001,"Testing exact Tajima's D correction: D value correct");        
         
-        $d=$vc->(2,100,{eucov=>20,A=>2,T=>18,C=>0,G=>0});
+        $d=$vc->(2,100,{eucov=>20,A=>2,T=>18,C=>0,G=>0},0.211836);
         ok(abs($d-(-1.91151)) < 0.00001,"Testing exact Tajima's D correction: D value correct");
         
-        $d=$vc->(2,100,{eucov=>100,A=>2,T=>98,C=>0,G=>0});
+        $d=$vc->(2,100,{eucov=>100,A=>2,T=>98,C=>0,G=>0},0.0404788);
         ok(abs($d-(-2.9895)) < 0.00001,"Testing exact Tajima's D correction: D value correct");
 
         #
         ## MAF
         #
-        $d=$vc->(1,100,{eucov=>100,A=>4,T=>96,C=>0,G=>0});
+        $d=$vc->(1,100,{eucov=>100,A=>4,T=>96,C=>0,G=>0},0.0783594);
         ok(abs($d-(-1.3003)) < 0.00001,"Testing exact Tajima's D correction: D value correct");        
         
-        $d=$vc->(3,100,{eucov=>100,A=>0,T=>96,C=>4,G=>0});
+        $d=$vc->(3,100,{eucov=>100,A=>0,T=>96,C=>4,G=>0},0.0808462);
         ok(abs($d-(-2.20397)) < 0.00001,"Testing exact Tajima's D correction: D value correct");
         
-        $d=$vc->(4,100,{eucov=>100,A=>0,T=>96,C=>4,G=>0});
+        $d=$vc->(4,100,{eucov=>100,A=>0,T=>96,C=>4,G=>0},0.0825787);
         ok(abs($d-(-2.68247)) < 0.00001,"Testing exact Tajima's D correction: D value correct");        
         
         ## POOLSIZE
-        $d=$vc->(2,10,{eucov=>100,A=>0,T=>60,C=>40,G=>0});
+        $d=$vc->(2,10,{eucov=>100,A=>0,T=>60,C=>40,G=>0},0.538724);
         ok(abs($d-(1.03101)) < 0.00001,"Testing exact Tajima's D correction: D value correct");
         
-        $d=$vc->(2,50,{eucov=>100,A=>0,T=>60,C=>40,G=>0});
+        $d=$vc->(2,50,{eucov=>100,A=>0,T=>60,C=>40,G=>0},0.497976);
         ok(abs($d-1.06846) < 0.00001,"Testing exact Tajima's D correction: D value correct");        
         
         
-        $d=$vc->(2,100,{eucov=>500,A=>2,T=>498,C=>0,G=>0});
-        ok(abs($d-(-5.42258)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");        
+        $d=$vc->(2,100,{eucov=>500,A=>2,T=>498,C=>0,G=>0},0.00806571);
+        ok(abs($d-(-5.42258)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        
+        ## Intuitive grasp
+        # pi=0.506132 theta=0.194667 var=0.0743082 R=(0.506132-0.194667)/sqrt(0.0743082)
+        #$d=$vc->(2,500,{eucov=>500,A=>250,T=>250,C=>0,G=>0});
+        #ok(abs($d-(1.14742)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>200,T=>300,C=>0,G=>0});
+        #ok(abs($d-(1.09948)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>100,T=>400,C=>0,G=>0});
+        #ok(abs($d-(0.645088)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>50,T=>450,C=>0,G=>0});
+        #ok(abs($d-(0.0417042)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>25,T=>475,C=>0,G=>0});
+        #ok(abs($d-(-0.626566)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>10,T=>490,C=>0,G=>0});
+        #ok(abs($d-(-1.6744)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>5,T=>495,C=>0,G=>0});
+        #ok(abs($d-(-2.6979)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        #
+        #$d=$vc->(2,500,{eucov=>500,A=>2,T=>498,C=>0,G=>0});
+        #ok(abs($d-(-4.58164)) < 0.00001,"Testing exact Tajima's D correction using a high coverage of M=500: D value correct");
+        
     }
     
     

@@ -42,13 +42,14 @@ sub get_D_calculator
         my $b=shift;
         my $n=shift;
         my $snp=shift;
+	my $averagethetawindow=shift;
         
         my $pi=$picalc->($b,$n,$snp);
         my $theta=$thetacalc->($b,$n,$snp);
         
         
         my $above=$pi-$theta;
-        my $below=$pi*$dbuffer->($b,$n,$snp->{eucov});
+        my $below=$averagethetawindow*$dbuffer->($b,$n,$snp->{eucov});
         
         return 0 if abs($above) < 0.000000000001;
         if ($below==0)
