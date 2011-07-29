@@ -176,9 +176,15 @@
             warn "No coverage for gene $t->{geneid}; Skipping gene..\n";
             next;
         }
-
-        $synmeasure     =   sprintf("%.8f",$synmeasure/$synlen);
-        $nonsynmeasure  =   sprintf("%.8f",$nonsynmeasure/$nonsynlen);
+        
+        # tajima's d need to be divided by the sqrt of the length
+        my $syndivisor=$synlen;
+        my $nonsyndivisor=$nonsynlen;
+        $syndivisor =sqrt($syndivisor) if(lc($measure) eq "d");
+        $nonsyndivisor=sqrt($nonsyndivisor) if(lc($measure) eq "d");
+        
+        $synmeasure     =   sprintf("%.8f",$synmeasure/$syndivisor);
+        $nonsynmeasure  =   sprintf("%.8f",$nonsynmeasure/$nonsyndivisor);
         
         print $ofh "$t->{geneid}\t$nonsynlen\t$synlen\t$nonsynsnps\t$synsnps\t$nonsynmeasure\t$synmeasure\n";
     }
