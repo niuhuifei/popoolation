@@ -244,11 +244,21 @@
             }
             
             # calculate the measures
-            $synmeasure/=$synlength if $synlength;
-            $nonsynmeasure/=$nonsynlength if $nonsynlength;
+            if($synlength)
+            {
+                my $syndivisor=$synlength;
+                $syndivisor=sqrt($syndivisor) if(lc($measure) eq "d");
+                $synmeasure/=$syndivisor;
+            }
+            if($nonsynlength)
+            {
+                my $nonsyndivisor=$nonsynlength;
+                $nonsyndivisor = sqrt($nonsyndivisor) if(lc($measure) eq "d");
+                $nonsynmeasure/=$nonsyndivisor;
+            }
             
-            $synmeasure=sprintf("%.12f",$synmeasure);
-            $nonsynmeasure=sprintf("%.12f",$nonsynmeasure);
+            $synmeasure=sprintf("%.8f",$synmeasure);
+            $nonsynmeasure=sprintf("%.8f",$nonsynmeasure);
 
             # synmeasure, nonsynmeasure, synsnps, nonsynsnps, synlength, nonsynlength, validcodons, codonswithsnps
             return {
