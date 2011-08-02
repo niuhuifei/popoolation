@@ -122,7 +122,7 @@
     my $ptws=PileupTripletWindowSlider->new($pts,$windowSize,$stepSize);
     
     # get measure calculator
-    my $meascalc = Utility::get_measure_calculator($minCount,$poolSize,$measure,$nonsynTable);
+    my $meascalc = Utility::get_measure_calculator($minCount,$poolSize,$measure,$nonsynTable,$uncorrected);
     
     # get snp writer
     my $snpwriter;
@@ -211,7 +211,7 @@
             
             my($synlength,$nonsynlength)=(0,0);
             my($synmeasure,$nonsynmeasure)=(0,0);
-            my($synsnps,$nonsynsnps)=(0,0);
+            my($synsnplist,$nonsynsnplist)=([],[]);
             my($count_valid,$count_codons_withsnps)=(0,0);
 
             foreach my $tr (@$triplets)
@@ -235,34 +235,20 @@
                 foreach my $cc (@$codonchanges)
                 {
                     my $syn=$cc->{syn};
-                    # actualy passing the codonchanges not the snp but they have the same inteface: A, T, C, G, eucov
-                    my $meas=$vec->calculate_measure($measure,[$cc],1);
                     if($syn)
                     {
-                        $synsnps++;
-                        $synmeasure+=$meas;
+                        push @$synsnplist,$cc;
                     }
                     else
                     {
-                        $nonsynsnps++;
-                        $nonsynmeasure+=$meas;
+                        push @$nonsynsnplist,$cc;
                     } 
                 }
             }
-            
-            # calculate the measures
-            if($synlength)
-            {
-                my $syndivisor=$synlength;
-                $syndivisor=sqrt($syndivisor) if(lc($measure) eq "d");
-                $synmeasure/=$syndivisor;
-            }
-            if($nonsynlength)
-            {
-                my $nonsyndivisor=$nonsynlength;
-                $nonsyndivisor = sqrt($nonsyndivisor) if(lc($measure) eq "d");
-                $nonsynmeasure/=$nonsyndivisor;
-            }
+            my $synsnps=@$synsnplist;
+            my $nonsynsnps=@$nonsynsnplist;
+            $synmeasure = $vec->calculate_measure($measure,$synsnplist,$synlength);
+            $nonsynmeasure=$vec->calculate_measure($measure,$nonsynsnplist,$nonsynlength);
             
             $synmeasure=sprintf("%.8f",$synmeasure);
             $nonsynmeasure=sprintf("%.8f",$nonsynmeasure);
