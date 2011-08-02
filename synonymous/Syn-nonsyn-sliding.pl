@@ -38,6 +38,7 @@
     my $poolSize=0;
     my $maxTripletSNPs=3;
     my $suppressNa=0;
+    my $uncorrected=0;
     my $help=0;
     my $test=0;
     
@@ -62,6 +63,7 @@
         "max-coverage=i"    =>\$maxCoverage,
         "min-covered-fraction=f"=>\$minCoveredFraction,
         "suppress-na"       =>\$suppressNa,
+        "dissable-corrections"=>\$uncorrected,
         "test"              =>\$test,
         "help"              =>\$help
     ) or die "Invalid arguments";
@@ -101,6 +103,7 @@
     print $pfh "Using max-coverage\t$maxCoverage\n";
     print $pfh "Using min-covered-fraction\t$minCoveredFraction\n";
     print $pfh "Using suppress-na\t$suppressNa\n";
+    print $pfh "Dissable corrections\t$uncorrected\n";
     print $pfh "Using test\t$test\n";
     print $pfh "Using help\t$help\n";
     close $pfh;
@@ -184,6 +187,8 @@
     use warnings;
     use FindBin qw($RealBin);
     use lib "$RealBin/../Modules";
+    use VarianceExactCorrection;
+    use VarianceUncorrected;
     use Test;
     use SynNonSyn;
     
@@ -196,7 +201,9 @@
         my $poolsize=shift;
         my $measure=shift;
         my $nonsynTable=shift;
+        my $uncorrected=shift;
         my $vec=VarianceExactCorrection->new($poolsize,$mincount);
+        $vec=VarianceUncorrected->new($poolsize,$mincount) if $uncorrected;
         
         return sub
         {

@@ -7,6 +7,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/Modules";
 use FormatSNP;
 use VarianceExactCorrection;
+use VarianceUncorrected;
 use Pileup;
 
 
@@ -26,6 +27,7 @@ my $minCoverage=4;
 my $maxCoverage=1000000;
 my $makeNoise=100000;
 my $tolerateDeletions=0;
+my $uncorrected=0;
 
 my $minCoveredFraction=0.6;
 
@@ -49,6 +51,7 @@ GetOptions(
     "max-coverage=i"    =>\$maxCoverage,
     "min-covered-fraction=f"=>\$minCoveredFraction,
     "no-discard-deletions"=>\$tolerateDeletions,
+    "dissable-corrections"=>\$uncorrected,
     "test"              =>\$test,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -80,6 +83,7 @@ print $pfh "Using min-coverage\t$minCoverage\n";
 print $pfh "Using max-coverage\t$maxCoverage\n";
 print $pfh "Using min-covered-fraction\t$minCoveredFraction\n";
 print $pfh "Using no-discard-deletions\t$tolerateDeletions\n";
+print $pfh "Dissable corrections\t$uncorrected\n";
 print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
@@ -87,6 +91,7 @@ close $pfh;
 # get the method which should be used to calculate a feature;
 #my $measureCalculator=getMeasureCalculater($measure);
 my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
+$varianceCalculator=VarianceUncorrected->new($poolSize,$minCount) if $uncorrected;
 
 # qualencoding,mincount,mincov,maxcov,minqual
 my $pp=get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual,$tolerateDeletions);
@@ -374,12 +379,14 @@ exit;
     use FindBin qw($RealBin);
     use lib "$RealBin/Modules";
     use Test::Variance;
+    use Test::TClassicalVariance;
     use Test::PileupParser;
     use Test;
     
     sub runTests
     {
         run_PileupParserTests(); 
+        run_classicalVarianceTests();
         run_VarianceTests();
         test_read_gtf();
         exit;
@@ -540,6 +547,10 @@ The minimum quality; Alleles with a quality lower than this threshold will not b
 =item B<--no-discard-deletions>
 
 per default sites with already a single deletion are discarded. By setting this flag sites with deletions will be used
+
+=item B<--dissable-corrections>
+
+Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classical way not taking into account pooling or missing minor alleles; default=off
 
 =item B<--test>
 

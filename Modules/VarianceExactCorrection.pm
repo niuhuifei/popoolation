@@ -56,28 +56,6 @@
         }
     }
     
-    sub calculate_measure_old
-    {
-        my $self=shift;
-        my $measure=shift;
-        my $snps=shift;
-        my $covercount=shift;
-        
-        $measure=lc($measure);
-        
-        my $measure_sum=0;
-        foreach my $snp(@$snps)
-        {
-            
-            my $meas_snp=$self->{$measure}->($self->{b}, $self->{n}, $snp);
-            return "na" if $meas_snp eq "na";
-            $measure_sum+=$meas_snp;
-        }
-        
-        my $toret=0;
-        $toret=$measure_sum/$covercount if $covercount;
-        return $toret;
-    }
     
     sub _calculate_pi
     {
