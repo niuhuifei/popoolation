@@ -6,6 +6,7 @@ use Pod::Usage;
 use FindBin qw($RealBin);
 use lib "$RealBin/Modules";
 use VarianceExactCorrection;
+use VarianceUncorrected;
 use FormatSNP;
 use Pileup;
 our $verbose=1;
@@ -26,6 +27,7 @@ my $maxCoverage=1000000;
 my $minCoveredFraction=0.6;
 my $region="";
 my $tolerateDeletions=0;
+my $uncorrected=0;
 
 
 # --measure pi --help --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi --snp-output /Users/robertkofler/dev/testfiles/output/test.snps
@@ -51,6 +53,7 @@ GetOptions(
     "min-covered-fraction=f"=>\$minCoveredFraction,
     "region=s"          =>\$region,
     "no-discard-deletions" =>\$tolerateDeletions,
+    "dissable-corrections"       =>\$uncorrected,
     "test"              =>\$test,
     "help"              =>\$help
 ) or die "Invalid arguments";
@@ -84,6 +87,7 @@ print $pfh "Using max-coverage\t$maxCoverage\n";
 print $pfh "Using min-covered-fraction\t$minCoveredFraction\n";
 print $pfh "Using region\t$region\n";
 print $pfh "Using no-discard-deletions\t$tolerateDeletions\n";
+print $pfh "Dissable corrections\t$uncorrected\n";
 print $pfh "Using help\t$help\n";
 print $pfh "Using test\t$test\n";
 close $pfh;
@@ -99,6 +103,7 @@ if($region)
 }
 
 my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
+$varianceCalculator=VarianceUncorrected->new($poolSize,$minCount) if $uncorrected;
 
 open my $ofh, ">",$output or die "Could not open output file $output\n";
 
@@ -377,6 +382,7 @@ exit;
     use lib "$RealBin/Modules";
     use VarianceExactCorrection;
     use Test::Variance;
+    use Test::TClassicalVariance;
     use Test::PileupParser;
     use Pileup;
     use Test;
@@ -386,6 +392,7 @@ exit;
     {
         run_PileupParserTests();
         testPileupSlider();
+        run_classicalVarianceTests();
         run_VarianceTests();
         exit;
     }
@@ -429,10 +436,7 @@ exit;
         my $pilsl;
         my $win;
 
-        #"chr2\t3\tN\t11:0:0:11:0\t8:0:0:0:8\t20:0:0:20:0\n".
-        #"chr3\t1\tN\t8:0:0:8:0\t8:0:0:8:0\t8:0:0:8:0\n".
-        #"chr3\t2\tN\t1:0:0:1:0\t5:0:0:0:5\t8:0:0:8:0\n".
-        #"chr4\t4\tN\t8:0:0:8:0\t8:0:0:8:0\t8:0:0:8:0\n";
+
         $str=
         "2L\t1\tA\t9\tCCCCCAAAA\tTTTTTTTTT\n".
         "2L\t2\tA\t7\tCCCCAAA\tTTTTTTT\n".
@@ -653,6 +657,10 @@ the size of one sliding window step. If this number is equal to the --window-siz
 =item B<--no-discard-deletions>
 
 per default sites with already a single deletion are discarded. By setting this flag, sites with deletions will be used.
+
+=item B<--dissable-corrections>
+
+Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classical way not taking into account pooling or missing minor alleles; default=off
 
 =item B<--test>
 
