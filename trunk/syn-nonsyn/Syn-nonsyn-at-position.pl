@@ -8,6 +8,7 @@
     use FindBin qw($RealBin);
     use lib "$RealBin/../Modules";
     use VarianceExactCorrection;
+    use VarianceUncorrected;
     use Pileup;
     use PileupTripletSlider;
     use SynNonSyn;
@@ -36,6 +37,7 @@
     my $measure="";
     my $poolSize=0;
     my $maxTripletSNPs=3;
+    my $uncorrected=0;
     my $help=0;
     my $test=0;
     
@@ -57,6 +59,7 @@
         "min-coverage=i"    =>\$minCoverage,
         "max-coverage=i"    =>\$maxCoverage,
         "region-output=s"   =>\$usedregionfile,
+        "dissable-corrections"=>\$uncorrected,
         "test"              =>\$test,
         "help"              =>\$help
     ) or die "Invalid arguments";
@@ -93,6 +96,7 @@
     print $pfh "Using min-coverage\t$minCoverage\n";
     print $pfh "Using max-coverage\t$maxCoverage\n";
     print $pfh "Using region-output\t$usedregionfile\n";
+    print $pfh "Dissable corrections\t$uncorrected\n";
     print $pfh "Using test\t$test\n";
     print $pfh "Using help\t$help\n";
     close $pfh;
@@ -110,7 +114,9 @@
     # gradually building the pileup window slider
     my $pp=get_extended_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
     my $pts=PileupTripletSlider->new($pileupfile,$chrFrames,$pp);
-    my $mcal=Utility::get_measure_calculator($measure,$poolSize,$minCount);
+     
+    my $vec=VarianceExactCorrection->new($poolSize,$minCount);
+    $vec=VarianceUncorrected->new($poolSize,$minCount) if $uncorrected;
     
     # get snp writer
     my $snpwriter;
@@ -145,19 +151,33 @@
         get_codon_changes($tr,$codonTable);
         $snpwriter->($tr,$genelist) if $snpfile;
         
-        # calculate the measure
-        my ($synsnps,$nonsynsnps,$synmeasure,$nonsynmeasure) = $mcal->($tr);
+
         foreach my $geneid (@$genelist)
         {
             my $gene=$genecollection->{$geneid};
-            # geneid, chr, synlen, nonsynlen, synmeasure, nonsynmeasure, synsnps, nonsynsnps, coveredreg
-            $gene->{synmeasure}     +=$synmeasure;
-            $gene->{nonsynmeasure}  +=$nonsynmeasure;
-            $gene->{synsnps}        +=$synsnps;
-            $gene->{nonsynsnps}     +=$nonsynsnps;
-        }
+            $gene->{synsnplist}=[] unless($gene->{synsnplist});
+            $gene->{nonsynsnplist}=[] unless($gene->{nonsynsnplist});
+            my $codonchanges=$tr->{cc};
+            foreach my $cc (@$codonchanges)
+            {
+
+                if($cc->{syn})
+                {
+                    push @{$gene->{synsnplist}},$cc;
+                    $gene->{synsnps}++;
+                }
+                else
+                {
+                    push @{$gene->{nonsynsnplist}},$cc;
+                    $gene->{nonsynsnps}++;                
+                }
+            }
         
+        }
     }
+    # a gene has
+    # synsnplist, nonsynsnplist, synsnps,nonsynsnps,synlen,nonsynlen ,countcodon, coveredreg
+    
     print "Finished parsing pielup file...\n";
     
     my $regpr = undef;
@@ -169,22 +189,20 @@
         
         $regpr->($t) if $usedregionfile;
         #
-        # geneid, chr, synlen, nonsynlen, synmeasure, nonsynmeasure, synsnps, nonsynsnps, coveredreg, countcodon
-        my($countcodon,$synlen,$nonsynlen,$synsnps,$nonsynsnps,$synmeasure,$nonsynmeasure)=($t->{countcodon},$t->{synlen},$t->{nonsynlen},$t->{synsnps},$t->{nonsynsnps},$t->{synmeasure},$t->{nonsynmeasure});
+        # synsnplist, nonsynsnplist, synsnps,nonsynsnps,synlen,nonsynlen ,countcodon, coveredreg
+        my($countcodon,$synlen,$nonsynlen,$synsnps,$nonsynsnps)=($t->{countcodon},$t->{synlen},$t->{nonsynlen},$t->{synsnps},$t->{nonsynsnps});
         if(not $synlen or not $nonsynlen)
         {
             warn "No coverage for gene $t->{geneid}; Skipping gene..\n";
             next;
         }
+
+        #$vec->calculate_measure($measure,$synsnplist,$synlength);
+        my $synmeasure=$vec->calculate_measure($measure,$t->{synsnplist},$synlen);
+        my $nonsynmeasure=$vec->calculate_measure($measure,$t->{nonsynsnplist},$nonsynlen);
         
-        # tajima's d need to be divided by the sqrt of the length
-        my $syndivisor=$synlen;
-        my $nonsyndivisor=$nonsynlen;
-        $syndivisor =sqrt($syndivisor) if(lc($measure) eq "d");
-        $nonsyndivisor=sqrt($nonsyndivisor) if(lc($measure) eq "d");
-        
-        $synmeasure     =   sprintf("%.8f",$synmeasure/$syndivisor);
-        $nonsynmeasure  =   sprintf("%.8f",$nonsynmeasure/$nonsyndivisor);
+        $synmeasure     =   sprintf("%.8f",$synmeasure);
+        $nonsynmeasure  =   sprintf("%.8f",$nonsynmeasure);
         
         print $ofh "$t->{geneid}\t$nonsynlen\t$synlen\t$nonsynsnps\t$synsnps\t$nonsynmeasure\t$synmeasure\n";
     }
@@ -200,6 +218,8 @@
     use warnings;
     use FindBin qw($RealBin);
     use lib "$RealBin/../Modules";
+    use VarianceExactCorrection;
+    use VarianceUncorrected;
     use Test;
     use SynNonSyn;
     
@@ -226,36 +246,6 @@
         }
     }
     
-    sub get_measure_calculator
-    {
-        my $measure=shift;
-        my $poolsize=shift;
-        my $mincount=shift;
-        
-        my $vec=VarianceExactCorrection->new($poolsize,$mincount);
-        
-        return sub
-        {
-            my $tr=shift;
-            my($synsnps,$nonsynsnps,$synmeasure,$nonsynmeasure)=(0,0,0,0);
-            my $codonchanges=$tr->{cc};
-            foreach my $cc (@$codonchanges)
-            {
-                my $meas=$vec->calculate_measure($measure,[$cc],1);
-                if($cc->{syn})
-                {
-                    $synsnps++;
-                    $synmeasure+=$meas;
-                }
-                else
-                {
-                    $nonsynsnps++;
-                    $nonsynmeasure+=$meas;
-                }
-            }
-            return ($synsnps,$nonsynsnps,$synmeasure,$nonsynmeasure);
-        }
-    }
     
     sub basicupdate_genelist
     {
@@ -290,7 +280,7 @@
         $genecoll->{$gene}{nonsynlen}   += $nonsynlength;
         $genecoll->{$gene}{synlen}      +=$synlength;
         $genecoll->{$gene}{countcodon}  ++;
-        
+        # coveredreg, nonsynlen,synlen,countcodon
     }
     
     sub get_default_geneentry{
@@ -435,6 +425,10 @@ The minimum quality; Alleles with a quality lower than this threshold will not b
 
 The maximum number of SNPs in a triplet to be considered. If the number of SNPs in the triplet exceeds this number it will be ignored; default=3
 The algorithm will treat every SNP independently.
+
+=item B<--dissable-corrections>
+
+Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classical way not taking into account pooling or missing minor alleles; default=off
 
 =item B<--test>
 
