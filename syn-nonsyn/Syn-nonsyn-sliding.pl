@@ -424,6 +424,10 @@ The size of the sliding window. default=50000
 
 the size of one sliding window step. If this number is equal to the --window-size the sliding window will be non overlapping (jumping window). default=10000
 
+=item B<--dissable-corrections>
+
+Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classical way not taking into account pooling or missing minor alleles; default=off
+
 =item B<--suppress-na>
 
 flag; If provided the output of fields containing na will be suppressed
