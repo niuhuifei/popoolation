@@ -130,6 +130,13 @@
         ok(abs($d-(0.604333))<0.00001,"Testing uncorrected Tajima's D: Tajima's D value correct");
         
         
+        # Looking for the lower boundaries
+        $d=$vc->([{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0}]);
+        ok(abs($d-(-1.731783))<0.00001,"Testing uncorrected Tajima's D: Tajima's D value correct");
+        $d=$vc->([{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0},{eucov=>30,A=>29,T=>1,C=>0,G=>0}]);
+        ok(abs($d-(-2.099947))<0.00001,"Testing uncorrected Tajima's D: Tajima's D value correct");
+        
+        
         $d=$vc->([]);
         ok(abs($d-(0))<0.00001,"Testing uncorrected Tajima's D: Tajima's D value correct");
     }

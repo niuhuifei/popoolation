@@ -155,8 +155,6 @@
         foreach my $geneid (@$genelist)
         {
             my $gene=$genecollection->{$geneid};
-            $gene->{synsnplist}=[] unless($gene->{synsnplist});
-            $gene->{nonsynsnplist}=[] unless($gene->{nonsynsnplist});
             my $codonchanges=$tr->{cc};
             foreach my $cc (@$codonchanges)
             {
@@ -276,6 +274,7 @@
             my $defe=get_default_geneentry($gene,$chr);
             push @{$defe->{coveredreg}},{start=>$start,end=>$start+2};
             $genecoll->{$gene}=$defe;
+            
         }
         $genecoll->{$gene}{nonsynlen}   += $nonsynlength;
         $genecoll->{$gene}{synlen}      +=$synlength;
@@ -299,7 +298,9 @@
           nonsynmeasure =>0,
           synsnps       =>0,
           nonsynsnps    =>0,
-          coveredreg    =>[]
+          coveredreg    =>[],
+          synsnplist    =>[],
+          nonsynsnplist =>[]
         };
     }
     

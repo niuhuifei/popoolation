@@ -43,7 +43,8 @@
     my $test=0;
     
     # --measure pi --pool-size 500 --gtf /Users/robertkofler/dev/testfiles/2R.gff --pileup /Users/robertkofler/dev/testfiles/basepop_2R.pileup --output /Users/robertkofler/dev/testfiles/output/2R-syn-nonsyn.txt --codon-table /Users/robertkofler/dev/PopGenTools/syn-nonsyn/codon-table.txt --nonsyn-length-table /Users/robertkofler/dev/PopGenTools/syn-nonsyn/nsl_p6.txt
-
+    # --measure D --dissable-corrections --pool-size 500 --gtf /Volumes/Volume_3/analysis/syn-nonsyn/X.gtf --pileup /Volumes/Volume_3/analysis/syn-nonsyn/x.pileup --output /Volumes/Volume_3/analysis/syn-nonsyn/testout.txt --codon-table /Users/robertkofler/dev/popoolation/syn-nonsyn/codon-table.txt --nonsyn-length-table /Users/robertkofler/dev/popoolation/syn-nonsyn/nsl_p6.txt --min-count 1   
+    
     GetOptions(
         "measure=s"         =>\$measure,
         "pileup=s"          =>\$pileupfile,
@@ -114,6 +115,7 @@
     my $nonsynTable=load_nonsyn_length_table($nonsynLengthTableFile);
     print "Loading gtf file...\n";
     my $chrAnotation=load_cds_gtf($gtf_file);
+    print "Parsing pileup file..\n";
     
     
     # gradually building the pileup window slider
@@ -170,7 +172,7 @@
         if($measure->{synmeasure} ne "na" or not $suppressNa)
         {
             print $ofh "$chr\t$middle\t$count_codons\t$measure->{validcodons}\t$measure->{codonswithsnps}\t$usedfraction\t$measure->{nonsynlength}\t".
-            "$measure->{synlength}\t$measure->{nonsynsnps}\t$measure->{synsnps}\t$measure->{nonsynmeasure}\t$measure->{synmeasure}\n"
+            "$measure->{synlength}\t$measure->{nonsynsnps}\t$measure->{synsnps}\t$measure->{nonsynmeasure}\t$measure->{synmeasure}\n";
         }
     }
     close $ofh;
