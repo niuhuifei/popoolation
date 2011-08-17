@@ -6,7 +6,6 @@ use Pod::Usage; # to show documentations
 use File::Basename; # to get the file path, file name and file extension
 
 # Author: Ram Vinay Pandey
-
 # Modified on 12-04-2010 to implement uniform Window sliding module.
 
 # Define the variables
