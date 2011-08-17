@@ -39,19 +39,21 @@ sub _average_pairwise_differences
 {
     my $snp=shift;
     
-    my $comparisions=0;
-    my $differences=0;
-    my @alleles=(split //, "A" x $snp->{A} . "T" x $snp->{T} . "C" x $snp->{C} . "G" x $snp->{G});
-    my $leng=@alleles;
-    for my $i (0..$leng-1)
-    {
-        for my $k ($i+1..$leng-1)
-        {
-            $differences++ if $alleles[$i] ne $alleles[$k];
-            $comparisions++;
-        }
-    }
-    return $differences/$comparisions;
+    my $pwc =nover2($snp->{eucov});
+    my $asim=nover2($snp->{A});
+    my $tsim= nover2($snp->{T});
+    my $csim= nover2($snp->{C});
+    my $gsim= nover2($snp->{G});
+    my $sim = $asim+$tsim+$csim+$gsim;
+    my $pi=1-$sim/$pwc;
+    return $pi;
+}
+
+sub nover2
+{
+    my $n=shift;
+    return 0 if $n < 2;
+    return ($n*($n-1))/2;
 }
 
 

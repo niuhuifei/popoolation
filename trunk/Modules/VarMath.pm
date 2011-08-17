@@ -7,7 +7,7 @@ use Math::BigRat;
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT=qw(noverk get_theta_calculator get_pi_calculator get_D_calculator);
-our @EXPORT_OK = qw(get_thetadiv_buffer get_thetadiv_buffer_sqr);
+our @EXPORT_OK = qw(get_thetadiv_buffer get_thetadiv_buffer_sqr get_nbase_buffer);
 
 
 # get_aMnm_calculator( M, n, m ) (M..coverage, n..poolsize,  running var ~ coverage)
@@ -23,48 +23,272 @@ our @EXPORT_OK = qw(get_thetadiv_buffer get_thetadiv_buffer_sqr);
 my $amnm_buffer;
 my $pidiv_buffer;
 my $thetadiv_buffer;
-my $ddiv_buffer;
 my $thetadiv_buffer_sqr;
 my $amnm_buffer_sqr;
+
+## Buffer for Nicolas novel Tajima's D
+my $an_buffer;
+my $bn_buffer;
+my $astar_buffer;
+my $bstar_buffer;
+my $nbase_buffer;
 ##
 ## BUFFER's
 ##
+
+sub get_an_buffer
+{
+    $an_buffer={} unless $an_buffer;
+    return sub
+    {
+	my $n=shift;
+	return $an_buffer->{$n} if(exists($an_buffer->{$n}));
+	
+	my $an=0;
+	foreach my $i (1..($n-1))
+	{
+	    $an+=(1/$i);
+	}
+	$an_buffer->{$n}=$an;
+	return $an;
+    }
+}
+
+sub get_bn_buffer
+{
+    $bn_buffer={} unless $bn_buffer;
+    return sub
+    {
+	my $n=shift;
+	return $bn_buffer->{$n} if(exists($bn_buffer->{$n}));
+	
+	my $bn=0;
+	foreach my $i (1..($n-1))
+	{
+	    $bn+=(1/($i**2));
+	}
+	$bn_buffer->{$n}=$bn;
+	return $bn;
+    }
+}
+
 
 
 sub get_D_calculator
 {
     my $thetacalc=get_theta_calculator();
     my $picalc=get_pi_calculator();
-    my $dbuffer=get_ddiv_buffer();
+    my $ddivisor=get_ddivisor();
     
     return sub
     {
         my $b=shift;
         my $n=shift;
-        my $snp=shift;
-	my $averagethetawindow=shift;
-        
-        my $pi=$picalc->($b,$n,$snp);
-        my $theta=$thetacalc->($b,$n,$snp);
-        
-        
-        my $above=$pi-$theta;
-        my $below=$averagethetawindow*$dbuffer->($b,$n,$snp->{eucov});
-        
-        return 0 if abs($above) < 0.000000000001;
-        if ($below==0)
-        {
-             warn "SNP: at $snp->{chr} $snp->{pos} has almost zero variance! -> Infinite Tajima's D; Details pi-theta: $above; variance: $below; SNP will be ignored\n";
-             return 0;
-        }
-        return 0 if $below==0;
-        $below=sqrt($below);
-        return ($above/$below);
+        my $snps=shift;
+	return 0 unless @$snps;
+	
+	my $pi		=$picalc->($b,$n,$snps);
+	my $theta	=$thetacalc->($b,$n,$snps);
+	my $ddivisor	=$ddivisor->($n,$snps,$theta);
+	return 0 if($pi-$theta)==0;
+	my $d = ($pi-$theta)/$ddivisor;
+	return $d;
     }
     
 }
 
+sub get_ddivisor
+{
+    my $nbase_buffer=get_nbase_buffer();
+    my $alphastarcalc=get_betastar_calculator();
+    my $betastarcalc=get_betastar_calculator();
+    return sub
+    {
+	my $n=shift;
+	my $snps=shift;
+	my $theta=shift;
+	
+	my $snpcount=@$snps;
+	
+	my $n_sum=0;
+	foreach my $snp (@$snps)
+	{
+	    my $cov=$snp->{eucov};
+	    my $nbase=$nbase_buffer->($n,$cov);
+	    $n_sum+=$nbase;
+	}
+	
+	my $averagen=int($n_sum/$snpcount);
+	my $alphastar=$alphastarcalc->($averagen);
+	my $betastar=$betastarcalc->($averagen);
+	my $div=($alphastar/$snpcount)*$theta + $betastar* ($theta**2);
+	return sqrt($div);
+    }
+}
 
+
+
+sub get_nbase_buffer
+{
+    $nbase_buffer={} unless($nbase_buffer);
+    return sub
+    {
+	my $n=shift;
+	my $cov=shift;
+
+
+	    ### shortcut
+	    die"Poolsize has to be larger than coverage; maybe decreasea maximum coverage" unless $n> $cov;
+	    return $cov;
+	    ## end shortcut
+	
+	my $key="$n:$cov";
+	return $nbase_buffer->{$key} if(exists($nbase_buffer->{$key}));
+	
+	my $nbase=_calculate_nbase($n,$cov);
+	$nbase_buffer->{$key}=$nbase;
+	return $nbase_buffer->{$key};
+    }
+}
+
+sub _calculate_nbase
+{
+    my $np=shift;
+    my $cov=shift;
+    my $max=$np>$cov?$np:$cov;
+    
+    my $toret=0;
+    for my $k (1..$max)
+    {
+	my $t=_get_t($cov,$k);
+	
+	#    my @above=(($n-$k+1)..$n);
+	#    my @below=(1..$k);
+	my @above=(($np-$k+1)..$np);
+	my @below=(1..$k);
+	push @above,$k;
+	for my $i (1..$cov)
+	{
+	    push @below,$np;
+	}
+	my $val=_resolve_above_below($t,\@above,\@below);
+	$toret+=$val;
+    }
+    return $toret;
+}
+
+sub _resolve_above_below
+{
+    my $t=shift;
+    my $above=shift;
+    my $below=shift;
+    return 0 unless $t;
+    my $val=$t;
+    while(@$above and @$below)
+    {
+        if($val<1)
+        {
+            $val*=shift @$above;
+        }
+        else
+        {
+            $val/=shift @$below;
+        }
+    }
+    
+    foreach(@$above)
+    {
+        $val*=$_;
+    }
+    foreach(@$below)
+    {
+        $val/=$_;
+    }
+    return $val
+
+}
+
+sub _get_t
+{
+    my $C=shift;
+    my $k=shift;
+    
+    my $toret=0;
+    for my $j (1..$k)
+    {
+	my $sign=(-1)**($k-$j);
+	my $nok=noverk($k,$j);
+	my $exp=$j**$C;
+	my $val=($sign * $nok * $exp);
+	$toret+=$val
+    }
+    return $toret;
+}
+
+
+sub get_alphastar_calculator
+{
+    my $anb=get_an_buffer();
+    $astar_buffer= {} unless $astar_buffer;
+    return sub
+    {
+	my $n=shift;
+	die "invalid effective coverage; has to be larger than 1" unless $n>1;
+	
+	return $astar_buffer->{$n} if(exists($astar_buffer->{$n}));
+	
+	my $an=$anb->($n);
+	my $fs=calculate_fstar($an,$n);
+	# calculate individual terms(t) and subterms(st)
+	my $t1=($fs**2)*($an-($n/($n-1)));
+	my $st1=$an * ( (4*($n+1)) / (($n-1)**2) );
+	my $st2=2 * (($n+3)/($n-1));
+	my $t2=$fs * ($st1-$st2);
+	my $t3=$an * ( (8*($n+1))/($n*(($n-1)**2)) );
+	my $t4= (($n**2)+$n+60)/(3*$n*($n-1));
+	my $astar= ($t1 + $t2 - $t3 + $t4);
+	$astar_buffer->{$n}=$astar;
+	return $astar;
+    }
+}
+
+sub get_betastar_calculator
+{
+    my $anb=get_an_buffer();
+    my $bnb=get_bn_buffer();
+    $bstar_buffer={} unless $bstar_buffer;
+    return sub
+    {
+	my $n=shift;
+	die "invalid effective coverage; has to be larger than 1" unless $n>1;
+	return $bstar_buffer->{$n} if(exists($bstar_buffer->{$n}));
+	my $an=$anb->($n);
+	my $bn=$bnb->($n);
+	my $fs=calculate_fstar($an,$n);
+	
+	my $t1 = ($fs**2) * ($bn - ((2*($n-1)) /(($n-1)**2)));
+	my $st1= $bn * (8/($n-1));
+	my $st2= $an * (4/($n*($n-1)));
+	my $st3= (($n**3)+12*($n**2)-35*$n+18)/($n*(($n-1)**2));
+	my $t2 = $fs*($st1-$st2-$st3);
+	my $t3 = $bn * (16/($n*($n-1)));
+	my $t4 = $an * (8/(($n**2)*($n-1)));
+	my $st4= 2*($n**4+ 110*($n**2)-255*$n+126);
+	my $st5= 9*($n**2)*(($n-1)**2);
+	my $t5 = $st4/$st5;
+	my $bstar= ($t1 + $t2 - $t3 + $t4 + $t5);
+	$bstar_buffer->{$n}=$bstar;
+	return $bstar;
+    }
+}
+
+
+sub calculate_fstar
+{
+    my $an=shift;
+    my $n=shift;
+    return (($n - 3)/($an*($n - 1) - $n));
+}
 
 
 
@@ -76,10 +300,13 @@ sub get_theta_calculator
     {
         my $b=shift;
         my $n=shift;
-        my $snp=shift;
-        
-        my $theta_snp=1 / ($thetadb->($b,$n,$snp->{eucov}));
-        return $theta_snp;
+        my $snps=shift;
+	my $thetasum=0;
+	foreach my $snp (@$snps)
+	{
+	    $thetasum+=1 / ($thetadb->($b,$n,$snp->{eucov}));
+	}
+        return $thetasum;
     }
 }
 
@@ -93,61 +320,28 @@ sub get_pi_calculator
     {
         my $b=shift;
         my $n=shift;
-        my $snp=shift;
-        
-        my $M=$snp->{eucov};
-        my $pi_snp=1;
-#        print $M, "\n";
-        $pi_snp-=($snp->{A}/$M)**2;
-        $pi_snp-=($snp->{T}/$M)**2;
-        $pi_snp-=($snp->{C}/$M)**2;
-        $pi_snp-=($snp->{G}/$M)**2;
-        $pi_snp*=$M/($M-1);
-        
-        $pi_snp/=$pidb->($b,$n,$M);
-        return $pi_snp;
+        my $snps=shift;
+	my $pisum=0;
+        foreach my $snp (@$snps)
+	{
+	    my $M=$snp->{eucov};
+	    my $pi_snp=1;
+    #        print $M, "\n";
+	    $pi_snp-=($snp->{A}/$M)**2;
+	    $pi_snp-=($snp->{T}/$M)**2;
+	    $pi_snp-=($snp->{C}/$M)**2;
+	    $pi_snp-=($snp->{G}/$M)**2;
+	    $pi_snp*=$M/($M-1);
+	    
+	    $pi_snp/=$pidb->($b,$n,$M);
+	    $pisum+=$pi_snp;
+	}
+
+        return $pisum;
     }
 }
 
 
-
-
-sub get_ddiv_buffer
-{
-    #Yields the sum of the pi and theta deviations!!
-    $ddiv_buffer={} unless $ddiv_buffer;
-    
-    my $amnm_buf=get_aMnm_buffer();
-    my $pi_calc=get_pi_calculator();
-    my $theta_calc=get_theta_calculator();
-    
-    # get_theta_calculator($b,$n,$snp)
-    # get_pi_calculator($b,$n,$snp)
-    
-    return sub
-    {
-      my $b=shift;
-      my $n=shift;
-      my $M=shift;
-      
-      my $key="$b:$n:$M";
-      return $ddiv_buffer->{$key} if exists($ddiv_buffer->{$key});
-     
-        my $div=0;
-        for my $m ($b..$M-$b)
-        {
-            my $pibpool=$pi_calc->($b,$n,{eucov=>$M,C=>0,G=>0,A=>$m,T=>$M-$m});
-            my $thetabpool=$theta_calc->($b,$n,{eucov=>$M,C=>0,G=>0,A=>$m,T=>$M-$m});
-            my $term1=($pibpool-$thetabpool)**2;
-            my $term2=$amnm_buf->($M,$n,$m);
-            
-            my $res=$term1*$term2;
-            $div+=$res;
-        }
-        $ddiv_buffer->{$key}=$div;
-        return $div;
-    };
-}
 
 
 
