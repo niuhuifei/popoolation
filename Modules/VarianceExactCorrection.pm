@@ -62,17 +62,10 @@
         my $self=shift;
         my $snps=shift;
         my $covercount=shift;
-        
-        my $pi_sum=0;
+    
         my $measurecalculater=$self->{pi};
-        foreach my $snp(@$snps)
-        {
-            
-            my $pi_snp=$measurecalculater->($self->{b}, $self->{n}, $snp);
-            return "na" if $pi_snp eq "na";
-            $pi_sum+=$pi_snp;
-        }
-        
+        my $pi_sum=$measurecalculater->($self->{b},$self->{n},$snps);
+
         my $toret=0;
         $toret=$pi_sum/$covercount if $covercount;
         return $toret;
@@ -85,19 +78,10 @@
         my $self=shift;
         my $snps=shift;
         my $covercount=shift;
-        
-        my $theta_sum=0;
-        my $measurecalculater=$self->{theta};
-        foreach my $snp(@$snps)
-        {
-            
-            my $theta_snp=$measurecalculater->($self->{b}, $self->{n}, $snp);
-            return "na" if $theta_snp eq "na";
-            $theta_sum+=$theta_snp;
-        }
-        
+        my $measurecalculator=$self->{theta};
+        my $theta=$measurecalculator->($self->{b},$self->{n},$snps);
         my $toret=0;
-        $toret=$theta_sum/$covercount if $covercount;
+        $toret=$theta/$covercount if $covercount;
         return $toret;
     }
     
@@ -107,22 +91,10 @@
         my $self=shift;
         my $snps=shift;
         my $covercount=shift;
-        
-        my $averagethetaperbase=$self->_calculate_theta($snps,$covercount);
-        
-        
-        my $d_sum=0;
-        my $measurecalculater=$self->{d};
-        foreach my $snp(@$snps)
-        {
-            
-            my $d_snp=$measurecalculater->($self->{b}, $self->{n}, $snp, $averagethetaperbase);
-            return "na" if $d_snp eq "na";
-            $d_sum+=$d_snp;
-        }
-        
+        my $measurecalculator=$self->{d};
+        my $d=$measurecalculator->($self->{b},$self->{n},$snps);
         my $toret=0;
-        $toret=$d_sum/sqrt($covercount) if $covercount;
+        $toret=$d if $covercount;
         return $toret;
     }
 }

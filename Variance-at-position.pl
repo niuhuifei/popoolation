@@ -471,6 +471,8 @@ exit;
     #"min-covered-fraction=f"=>\$minCoveredFraction,
     #"test"              =>\$test,
     #"help"              =>\$help
+
+
 =head1 NAME
 
 perl Variance-at-position.pl - A script which calculates the requested population genetics measure (pi, theta, d) along chromosomes using a sliding window approach.
