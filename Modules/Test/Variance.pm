@@ -15,6 +15,7 @@
     
     sub run_VarianceTests
     {
+        test_nbase();
         test_exact_Pi();
         test_exact_Theta();
         test_exact_D();
@@ -22,9 +23,27 @@
     
     sub test_nbase
     {
-        my $nbfu=get_nbase_buffer();
+        my $nbfu=get_nbase_buffer(30);
+        #$nbfu->($poolsize,$coverage);
         
-        my $r=$nbfu->(40,3);
+        
+        my $r1=$nbfu->(10);
+        my $r2=$nbfu->(20);
+        my $r3=$nbfu->(30);
+        my $r4=$nbfu->(40);
+        my $r5=$nbfu->(50);
+        my $r6=$nbfu->(1000);
+        
+        $nbfu=get_nbase_buffer(20);
+        my $r7=$nbfu->(20);
+        $nbfu=get_nbase_buffer(40);
+        my $r8=$nbfu->(20);
+        $nbfu=get_nbase_buffer(100);
+        my $r9=$nbfu->(20);
+        $nbfu=get_nbase_buffer(1000);
+        my $r10=$nbfu->(20);
+        
+        
         my $bla=0;
         
     }

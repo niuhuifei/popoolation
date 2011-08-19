@@ -99,7 +99,7 @@ sub get_D_calculator
 
 sub get_ddivisor
 {
-    my $nbase_buffer=get_nbase_buffer();
+    my $nbase_buffer;
     my $alphastarcalc=get_betastar_calculator();
     my $betastarcalc=get_betastar_calculator();
     return sub
@@ -107,6 +107,8 @@ sub get_ddivisor
 	my $n=shift;
 	my $snps=shift;
 	my $theta=shift;
+	$nbase_buffer=get_nbase_buffer($n) unless $nbase_buffer;
+	
 	
 	my $snpcount=@$snps;
 	
@@ -130,99 +132,83 @@ sub get_ddivisor
 
 sub get_nbase_buffer
 {
+    my $poolsize=shift;
     $nbase_buffer={} unless($nbase_buffer);
+    my $pijresolver=get_nbase_matrix_resolver(3*$poolsize,$poolsize);
     return sub
     {
-	my $n=shift;
+
 	my $cov=shift;
 
-
-	    ### shortcut
-	    die"Poolsize has to be larger than coverage; maybe decreasea maximum coverage" unless $n> $cov;
-	    return $cov;
-	    ## end shortcut
+	#### shortcut
+	#die"Poolsize has to be larger than coverage; maybe decreasea maximum coverage" unless $n> $cov;
+	#return $cov;
+	### end shortcut
 	
-	my $key="$n:$cov";
+	my $key="$poolsize:$cov";
 	return $nbase_buffer->{$key} if(exists($nbase_buffer->{$key}));
 	
-	my $nbase=_calculate_nbase($n,$cov);
+	my $nbase=0;
+	my $minj=$cov<$poolsize?$cov:$poolsize;
+	
+	for my $k(1..$minj)
+	{
+	    $nbase+=$k*$pijresolver->($cov,$k);
+	}
+	
 	$nbase_buffer->{$key}=$nbase;
 	return $nbase_buffer->{$key};
     }
 }
 
-sub _calculate_nbase
+
+sub _get_pij_matrix
 {
-    my $np=shift;
-    my $cov=shift;
-    my $max=$np>$cov?$np:$cov;
+    my $maxcoverage=shift;
+    my $poolsize=shift;
     
-    my $toret=0;
-    for my $k (1..$max)
+    my $jboundary=$maxcoverage < $poolsize ? $maxcoverage : $poolsize;
+    
+    my $matrix=[];
+    for my $i(1..$maxcoverage)
     {
-	my $t=_get_t($cov,$k);
-	
-	#    my @above=(($n-$k+1)..$n);
-	#    my @below=(1..$k);
-	my @above=(($np-$k+1)..$np);
-	my @below=(1..$k);
-	push @above,$k;
-	for my $i (1..$cov)
+	$matrix->[$i][0]=0;
+    }
+    for my $j(1..$jboundary)
+    {
+	$matrix->[0][$j]=0;
+    }
+    $matrix->[0][0]=1;
+    
+    for my $i(1..$maxcoverage)
+    {
+	for my $j (1..$jboundary)
 	{
-	    push @below,$np;
+	    my $t1= ((1+$poolsize-$j)/$poolsize)*($matrix->[$i-1][$j-1]);
+	    my $t2=($j/$poolsize)*($matrix->[$i-1][$j]);
+	    my $pij=$t1+$t2;
+	    $matrix->[$i][$j]=$pij;
 	}
-	my $val=_resolve_above_below($t,\@above,\@below);
-	$toret+=$val;
     }
-    return $toret;
+    return $matrix;
 }
 
-sub _resolve_above_below
+sub get_nbase_matrix_resolver
 {
-    my $t=shift;
-    my $above=shift;
-    my $below=shift;
-    return 0 unless $t;
-    my $val=$t;
-    while(@$above and @$below)
-    {
-        if($val<1)
-        {
-            $val*=shift @$above;
-        }
-        else
-        {
-            $val/=shift @$below;
-        }
-    }
+    my $maxcoverage=shift;
+    my $poolsize=shift;
+    my $matrix=_get_pij_matrix($maxcoverage,$poolsize);
     
-    foreach(@$above)
+    return sub
     {
-        $val*=$_;
+	my $C=shift;
+	my $k=shift;
+	unless(exists($matrix->[$C][$k]))
+	{
+	    $matrix=_get_pij_matrix(3*$C,$poolsize);
+	}
+	return $matrix->[$C][$k];
     }
-    foreach(@$below)
-    {
-        $val/=$_;
-    }
-    return $val
-
-}
-
-sub _get_t
-{
-    my $C=shift;
-    my $k=shift;
-    
-    my $toret=0;
-    for my $j (1..$k)
-    {
-	my $sign=(-1)**($k-$j);
-	my $nok=noverk($k,$j);
-	my $exp=$j**$C;
-	my $val=($sign * $nok * $exp);
-	$toret+=$val
-    }
-    return $toret;
 }
 
 
