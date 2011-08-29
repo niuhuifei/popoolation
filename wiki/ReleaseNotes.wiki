@@ -1,9 +1,9 @@
 #summary Lists changes in PoPoolation releases
 
 = 1.2.1 =
-This is a major novel release of PoPoolation which has several new features and a major bug fix. Most notably there was a problem with calculating Tajima's D.
+This is a major novel release of !PoPoolation which has several new features and a major bug fix. Most notably there was a problem with calculating Tajima's D.
 
   * Fixed a bug in calculating Tajima's D. For this novel equations have been developed to account for the idiosyncracies of pooling (Pool size, minor allele count). This novel method is aiming to closely reproduce the classical Tajima's D values. The novel equations can be found here:
-  * PoPoolation now allows to calculate the classical Tajima's D, Tajima's Pi, and Watterson's Theta. Since no corrections can be applied to the classical measures a minimum allele count of 1 has to be used. This feature also allows to explore the effect of the correction factors, by comparing corrected and uncorrected measures.
+  * !PoPoolation now allows to calculate the classical Tajima's D, Tajima's Pi, and Watterson's Theta. Since no corrections can be applied to the classical measures a minimum allele count of 1 has to be used. This feature also allows to explore the effect of the correction factors, by comparing corrected and uncorrected measures.
   * a new script has been added that allows to randomly sub-sample bases of a pileup file to achieve a uniform coverage throughout the whole genome. This may be useful to account for coverage effects
-  * As a major novel feature PoPoolation now allows to calculate the synonymous and non-synonymous Pi, Theta, Tajima's D, both corrected and uncorrected. The synonymous and non-synonymous measures may be calculated using a sliding window approach or for every feature (gene, exon) separately.
+  * As a major novel feature !PoPoolation now allows to calculate the synonymous and non-synonymous Pi, Theta, Tajima's D, both corrected and uncorrected. The synonymous and non-synonymous measures may be calculated using a sliding window approach or for every feature (gene, exon) separately.
