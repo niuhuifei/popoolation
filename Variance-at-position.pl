@@ -90,8 +90,8 @@ close $pfh;
 
 # get the method which should be used to calculate a feature;
 #my $measureCalculator=getMeasureCalculater($measure);
-my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
-$varianceCalculator=VarianceUncorrected->new($poolSize,$minCount) if $uncorrected;
+my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount,$minCoverage,$maxCoverage);
+$varianceCalculator=VarianceUncorrected->new($poolSize,$minCount,$minCoverage,$maxCoverage) if $uncorrected;
 
 # qualencoding,mincount,mincov,maxcov,minqual
 my $pp=get_pileup_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual,$tolerateDeletions);
@@ -141,9 +141,7 @@ while(my $line=<$ifh>)
         
     }
 }
-
-
-
+print "Finished parsing the pileup file; Processing features\n";
 # handle the remaining genes/features
 my @keys=keys(%$genehash);
 for my $key (@keys)

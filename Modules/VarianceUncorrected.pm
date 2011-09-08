@@ -10,6 +10,8 @@
         my $class = shift;
         my $poolsize=shift;
         my $maf=shift;
+        my $mincoverage=shift;
+        my $maxcoverage=shift;
         
         die "Uncorrected population genetic estimators can only be calculated for a minor allele frequency of 1; Instead it was set to $maf" unless $maf == 1;
         # get_theta_calculator($b,$n,$snp)

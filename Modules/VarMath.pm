@@ -84,12 +84,13 @@ sub get_D_calculator
     {
         my $b=shift;
         my $n=shift;
+	my $mincoverage=shift;
         my $snps=shift;
 	return 0 unless @$snps;
 	
 	my $pi		=$picalc->($b,$n,$snps);
 	my $theta	=$thetacalc->($b,$n,$snps);
-	my $ddivisor	=$ddivisor->($n,$snps,$theta);
+	my $ddivisor	=$ddivisor->($n,$mincoverage,$snps,$theta);
 	return 0 if($pi-$theta)==0;
 	my $d = ($pi-$theta)/$ddivisor;
 	return $d;
@@ -105,6 +106,7 @@ sub get_ddivisor
     return sub
     {
 	my $n=shift;
+	my $mincoverage=shift;
 	my $snps=shift;
 	my $theta=shift;
 	$nbase_buffer=get_nbase_buffer($n) unless $nbase_buffer;
@@ -112,15 +114,17 @@ sub get_ddivisor
 	
 	my $snpcount=@$snps;
 	
-	my $n_sum=0;
-	foreach my $snp (@$snps)
-	{
-	    my $cov=$snp->{eucov};
-	    my $nbase=$nbase_buffer->($n,$cov);
-	    $n_sum+=$nbase;
-	}
+	#my $n_sum=0;
+	#foreach my $snp (@$snps)
+	#{
+	#    my $cov=$snp->{eucov};
+	#    my $nbase=$nbase_buffer->($n,$mincoverage);
+	#    $n_sum+=$nbase;
+	#}
+	#
+	#my $averagen=int($n_sum/$snpcount);
 	
-	my $averagen=int($n_sum/$snpcount);
+	my $averagen=$nbase_buffer->($n,$mincoverage);
 	my $alphastar=$alphastarcalc->($averagen);
 	my $betastar=$betastarcalc->($averagen);
 	my $div=($alphastar/$snpcount)*$theta + $betastar* ($theta**2);
