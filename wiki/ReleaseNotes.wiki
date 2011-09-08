@@ -10,7 +10,7 @@ Calculation of Tajima's D has been updated (equation: http://popoolation.googlec
 
 *Details about calculating Tajima's D*
 
-As a basis for the equation for calculating Tajima's D we are using the results from Achaz (2008) for individual sequencing when singletons are omitted. The difficulty arises when calculating the variance of Tajima's D.
+As a basis for the equation for calculating Tajima's D we are using the results from Achaz (2008; http://www.ncbi.nlm.nih.gov/pubmed/18562660) for individual sequencing when singletons are omitted. The difficulty arises when calculating the variance of Tajima's D.
 The following simplifying assumptions are made in our variance approximation:
   * The locally fluctuating coverage is replaced by the minimum coverage. This makes the variance estimator larger, and therefore leads to conservative estimates of Tajima’s D.
   * The random number of different individuals sequenced (nbase) under a given coverage is replaced by its expected value. This assumption should not affect the results much, if the pool size is large compared to the coverage, sequencing the same individual more than once is uncommon under these circumstances. Furthermore the number of different individuals sequenced will have a low variance.  As we are working with the minimum coverage, nbase will be biased downwards—tending to give a conservative estimate oft he variance.
