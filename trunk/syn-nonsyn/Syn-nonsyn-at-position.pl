@@ -115,8 +115,8 @@
     my $pp=get_extended_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
     my $pts=PileupTripletSlider->new($pileupfile,$chrFrames,$pp);
      
-    my $vec=VarianceExactCorrection->new($poolSize,$minCount);
-    $vec=VarianceUncorrected->new($poolSize,$minCount) if $uncorrected;
+    my $vec=VarianceExactCorrection->new($poolSize,$minCount,$minCoverage,$maxCoverage);
+    $vec=VarianceUncorrected->new($poolSize,$minCount,$minCoverage,$maxCoverage) if $uncorrected;
     
     # get snp writer
     my $snpwriter;

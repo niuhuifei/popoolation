@@ -124,7 +124,7 @@
     my $ptws=PileupTripletWindowSlider->new($pts,$windowSize,$stepSize);
     
     # get measure calculator
-    my $meascalc = Utility::get_measure_calculator($minCount,$poolSize,$measure,$nonsynTable,$uncorrected);
+    my $meascalc = Utility::get_measure_calculator($minCount,$poolSize,$minCoverage,$maxCoverage,$measure,$nonsynTable,$uncorrected);
     
     # get snp writer
     my $snpwriter;
@@ -201,11 +201,13 @@
     {
         my $mincount=shift;
         my $poolsize=shift;
+        my $minCoverage=shift;
+        my $maxCoverage=shift;
         my $measure=shift;
         my $nonsynTable=shift;
         my $uncorrected=shift;
-        my $vec=VarianceExactCorrection->new($poolsize,$mincount);
-        $vec=VarianceUncorrected->new($poolsize,$mincount) if $uncorrected;
+        my $vec=VarianceExactCorrection->new($poolsize,$mincount,$minCoverage,$maxCoverage);
+        $vec=VarianceUncorrected->new($poolsize,$mincount,$minCoverage,$maxCoverage) if $uncorrected;
         
         return sub
         {

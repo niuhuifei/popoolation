@@ -102,8 +102,8 @@ if($region)
     $pileslider=PileupRegionSlider->new($pileslider,$region);
 }
 
-my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount);
-$varianceCalculator=VarianceUncorrected->new($poolSize,$minCount) if $uncorrected;
+my $varianceCalculator=VarianceExactCorrection->new($poolSize,$minCount,$minCoverage,$maxCoverage);
+$varianceCalculator=VarianceUncorrected->new($poolSize,$minCount,$minCoverage,$maxCoverage) if $uncorrected;
 
 open my $ofh, ">",$output or die "Could not open output file $output\n";
 
