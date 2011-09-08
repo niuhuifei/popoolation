@@ -3,7 +3,7 @@
 = 1.2.2 = 
 
 Calculation of Tajima's D has been updated (equation: http://popoolation.googlecode.com/files/correction_equations.pdf)
-  * Novel requirement for corrected Tajima's D. Poolsize > 3 * minimum coverage
+  * Novel requirement for corrected Tajima's D. Poolsize > 3 . minimum coverage
   * Novel requirement for corrected Tajima's D: minimum count must be 2!
   * Novel recommendation for corrected Tajima's D. We recommend subsampling of the pileup to a uniform coverage when calculating Tajima's D
   * nbase=expected_value(minimum coverage) => conservative (for more detail see equations)
