@@ -8,7 +8,7 @@ Calculation of Tajima's D has been updated (equation: http://popoolation.googlec
   * Novel recommendation for corrected Tajima's D. We recommend subsampling of the pileup to a uniform coverage when calculating Tajima's D
   * nbase=expected_value(minimum coverage) => conservative (for more detail see equations)
 
-More details about Tajima's D
+*Details about calculating Tajima's D*
 
 As a basis for the equation for calculating Tajima's D we are using the results from Achaz (2008) for individual sequencing when singletons are omitted.
 
