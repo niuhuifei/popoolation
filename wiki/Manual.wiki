@@ -111,7 +111,7 @@ May be used to create a uniform coverage in a pileup file. The bases of a pileup
 Popoolation offers two options for calculating Tajima's D. For both options we recommend to subsample the coverage to a uniform coverage.
 
   * Classic Tajima's D; minimum count needs to be set to 1 (--dissable-corrections)
-  * Corrected Tajima's D; minimum count needs to be set to 2; The work of Achatz (2008; http://www.ncbi.nlm.nih.gov/pubmed/18562660) is the basis for this equations; Furthermore Poolsize > 3 x minimum coverage
+  * Corrected Tajima's D; minimum count needs to be set to 2; The work of Achatz (2008; http://www.ncbi.nlm.nih.gov/pubmed/18562660) is the basis of our correction method; Requirement: Poolsize > 3 x minimum coverage
 
 == Detailed description of Tajima's D ==
 
