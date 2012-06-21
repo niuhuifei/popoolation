@@ -124,3 +124,7 @@ The following simplifying assumptions are made in our variance approximation:
 Summing up, the approximate variance in our equations provides a conservative approximation, and the values for Tajima’s D will tend to be smaller than those that would be expected for an experiment based on individual sequencing of a single sample.
 
 For a correlation between the classical Tajima's D and the corrected Tajima's D using the equation described above please see (x: classical, y: corrected). Correlation has been done with real data from _Drosophila_ with a coverage of 12, a window size of 500 and a minimum count of 1) http://popoolation.googlecode.com/files/correlation_classic_correctedTajimasD.pnghttp://popoolation.googlecode.com/files/correlation_classic_correctedTajimasD.png
+
+= After !PoPoolation =
+
+What to do after you successfully used !PoPoolation, having identified several hundreds (or thousands) of SNPs with unusual low (or high) Tajima's D or Watterson's Theta. You may use Gowinda to test whether your SNPs show an enrichment for any GO category (or any gene set): http://code.google.com/p/gowinda/
